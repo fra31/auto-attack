@@ -27,7 +27,7 @@ class AutoAttack():
         
         from square_attack import SquareAttack
         self.square = SquareAttack(self.model, p_init=.8, n_queries=5000, eps=self.epsilon, norm=self.norm,
-            show_progr=False, early_stop=True, n_restarts=1, show_acc=True)
+            show_progr=False, early_stop=True, n_restarts=1, show_acc=False, seed=self.seed)
             
     def run_standard_evaluation(self, x_orig, y_orig, bs=250):
         with torch.no_grad():
@@ -107,7 +107,8 @@ class AutoAttack():
                     
                 res = (x_adv - x).abs().view(x.shape[0], -1).max(1)[0]
                 if self.verbose:
-                    print('max perturbation: {:.5f}'.format(res.max()))
+                    print('max perturbation: {:.5f}, nan in tensor: {}, max: {:.5f}, min: {:.5f}'.format(
+                        res.max(), (x_adv != x_adv).sum(), x_adv.max(), x_adv.min()))
                 adv[counter * bs:(counter + 1) * bs] = x_adv + 0.
                 acc_total += acc.sum()        
         
