@@ -33,7 +33,7 @@ class AutoAttack():
         with torch.no_grad():
             n_batches = x_orig.shape[0] // bs
             acc_total = 0.
-            adv = x_orig.detach().clone()
+            adv = x_orig.detach().clone().cpu()
             
             for counter in range(n_batches):
                 x, y = x_orig[counter * bs:(counter + 1) * bs].clone().cuda(), y_orig[counter * bs:(counter + 1) * bs].clone().cuda()
@@ -109,7 +109,7 @@ class AutoAttack():
                 if self.verbose:
                     print('max perturbation: {:.5f}, nan in tensor: {}, max: {:.5f}, min: {:.5f}'.format(
                         res.max(), (x_adv != x_adv).sum(), x_adv.max(), x_adv.min()))
-                adv[counter * bs:(counter + 1) * bs] = x_adv + 0.
+                adv[counter * bs:(counter + 1) * bs] = x_adv.cpu() + 0.
                 acc_total += acc.sum()        
         
         if self.verbose:
