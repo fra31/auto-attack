@@ -25,8 +25,7 @@ DEFAULT_EPS_DICT_BY_NORM = {'Linf': .3, 'L2': 1., 'L1': 5.0}
 class FABAttack():
     """
     Fast Adaptive Boundary Attack (Linf, L2, L1)
-    https://arxiv.org/abs/1907.02044
-
+    
     :param predict:       forward pass function
     :param norm:          Lp-norm to minimize ('Linf', 'L2', 'L1' supported)
     :param n_restarts:    number of random restarts
@@ -520,96 +519,3 @@ class FABAttack():
 
         return adv
 
-class LinfFABAttack(FABAttack):
-    """
-    Linf - Fast Adaptive Boundary Attack
-    https://arxiv.org/abs/1907.02044
-
-    :param predict:       forward pass function
-    :param n_restarts:    number of random restarts
-    :param n_iter:        number of iterations
-    :param eps:           epsilon for the random restarts
-    :param alpha_max:     alpha_max
-    :param eta:           overshooting
-    :param beta:          backward step
-    :param device:        device to use ('cuda' or 'cpu')
-    """
-
-    def __init__(
-            self,
-            predict,
-            n_restarts=1,
-            n_iter=100,
-            eps=None,
-            alpha_max=0.1,
-            eta=1.05,
-            beta=0.9,
-            loss_fn=None,
-            verbose=False):
-        norm = 'Linf'
-        super(LinfFABAttack, self).__init__(
-            predict=predict, norm=norm, n_restarts=n_restarts,
-            n_iter=n_iter, eps=eps, alpha_max=alpha_max, eta=eta, beta=beta,
-            loss_fn=loss_fn, verbose=verbose)
-
-class L2FABAttack(FABAttack):
-    """
-    L2 - Fast Adaptive Boundary Attack
-    https://arxiv.org/abs/1907.02044
-
-    :param predict:       forward pass function
-    :param n_restarts:    number of random restarts
-    :param n_iter:        number of iterations
-    :param eps:           epsilon for the random restarts
-    :param alpha_max:     alpha_max
-    :param eta:           overshooting
-    :param beta:          backward step
-    :param device:        device to use ('cuda' or 'cpu')
-    """
-
-    def __init__(
-            self,
-            predict,
-            n_restarts=1,
-            n_iter=100,
-            eps=None,
-            alpha_max=0.1,
-            eta=1.05,
-            beta=0.9,
-            loss_fn=None):
-        norm = 'L2'
-        super(L2FABAttack, self).__init__(
-            predict=predict, norm=norm, n_restarts=n_restarts,
-            n_iter=n_iter, eps=eps, alpha_max=alpha_max, eta=eta, beta=beta,
-            loss_fn=loss_fn)
-
-class L1FABAttack(FABAttack):
-    """
-    L1 - Fast Adaptive Boundary Attack
-    https://arxiv.org/abs/1907.02044
-
-    :param predict:       forward pass function
-    :param n_restarts:    number of random restarts
-    :param n_iter:        number of iterations
-    :param eps:           epsilon for the random restarts
-    :param alpha_max:     alpha_max
-    :param eta:           overshooting
-    :param beta:          backward step
-    :param device:        device to use ('cuda' or 'cpu')
-    """
-
-    def __init__(
-            self,
-            predict,
-            n_restarts=1,
-            n_iter=100,
-            eps=None,
-            alpha_max=0.1,
-            eta=1.05,
-            beta=0.9,
-            loss_fn=None):
-        norm = 'L1'
-        super(L1FABAttack, self).__init__(
-            predict=predict, norm=norm, n_restarts=n_restarts,
-            n_iter=n_iter, eps=eps, alpha_max=alpha_max, eta=eta, beta=beta,
-            loss_fn=loss_fn)
