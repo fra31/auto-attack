@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import time
 
-class ModelAdapter():
+class ModelAdapterSA():
     def __init__(self, model):
         self.model = model
     
@@ -16,26 +16,22 @@ class ModelAdapter():
         logits[u, y] = -float('inf')
         y_others = logits.max(dim=-1)[0]
         
-        return y_corr - y_others, 0
+        return y_corr - y_others
 
 class SquareAttack():
-    def __init__(self, model, norm='L2', n_queries=10000, eps=5., p_init=0.1, device='cuda',
-                 early_stop=True, targeted=False, min_conf=None, show_progr=True, eot_iter=1,
-                 n_restarts=1, seed=0, show_acc=True):
-        self.model = ModelAdapter(model)
+    def __init__(self, model, norm='Linf', n_queries=5000, eps=.3, p_init=.8, device='cuda',
+                 early_stop=True, eot_iter=1, n_restarts=1, seed=0, verbose=False):
+        self.model = ModelAdapterSA(model)
         self.norm = norm
         self.n_queries = n_queries
         self.eps = eps
         self.p_init = p_init
         self.device = device
         self.early_stop = early_stop
-        self.targeted = targeted
-        self.min_conf = min_conf
-        self.show_progr = show_progr    
         self.eot_iter = eot_iter
         self.n_restarts = n_restarts
         self.seed = seed
-        self.show_acc = show_acc
+        self.verbose = verbose
     
     def check_shape(self, x):
         return x if len(x.shape) == 4 else x.unsqueeze(0)
@@ -89,12 +85,10 @@ class SquareAttack():
         
         return p
 
-    def p_selection_soft(self, it):
-        p = (it / self.n_queries) ** 2 * self.p_init
-        return p
-    
-    def attack_single_run(self, x, y, x_init=None):
+    def attack_single_run(self, x_in, y_in):
         with torch.no_grad():
+            x, y = x_in.clone(), y_in.clone()
+            
             if self.norm == 'Linf':
                 if self.eot_iter == 1:
                     output = self.model.predict(x)
@@ -108,9 +102,6 @@ class SquareAttack():
                     
                     corr_classified = (corr_classified > .5).nonzero().squeeze()
                 
-                #if (corr_classified > .5).sum() <= 1:
-                #    return 0, x.clone()
-                
                 adv = x.clone()
                 n_queries_complete = torch.zeros(x.shape[0]).to(self.device)
                 corr_cl_init = corr_classified.clone()
@@ -122,36 +113,27 @@ class SquareAttack():
                 x = self.check_shape(x)
                 if len(y.shape) == 0:
                     y = y.unsqueeze(0)
-                #print(x.shape, y, corr_classified)
                 
-                if x_init is None:
-                    x_best = torch.clamp(x + torch.from_numpy(self.eps * np.random.choice([-1, 1], size=[x.shape[0], c, 1, w])).float().to(self.device), 0., 1.)
-                else:
-                    x_best = torch.clamp(x_init, 0., 1.)
-                    x_best = torch.min(torch.max(x_init, x - self.eps), x + self.eps)
-                
+                x_best = torch.clamp(x + torch.from_numpy(self.eps * np.random.choice([-1, 1], size=[x.shape[0], c, 1, w])).float().to(self.device), 0., 1.)
+
                 if self.eot_iter == 1:
-                    margin_min, conf_miscl_min = self.model.fmargin(x_best, y) if not self.targeted else self.model.fmargin_targeted(x_best, y)
+                    margin_min = self.model.fmargin(x_best, y)
                 else:
                     margin_min = torch.zeros(x.shape[0]).to(self.device)
                     for _ in range(self.eot_iter):
-                        margin_min_temp, conf_miscl_min = self.model.fmargin(x_best, y) if not self.targeted else self.model.fmargin_targeted(x_best, y)
+                        margin_min_temp = self.model.fmargin(x_best, y)
                         margin_min += (margin_min_temp / self.eot_iter)
                     
                 n_queries = torch.ones(x.shape[0]).to(self.device)
                 
                 s_init = int(np.sqrt(self.p_init * n_features / c))
                 for i_iter in range(self.n_queries):
-                    if self.min_conf is None:
-                        idx_to_fool = (margin_min > 0.0).nonzero().squeeze() if self.early_stop else (margin_min > -float('inf')).nonzero().squeeze()
-                    else:
-                        idx_to_fool = (conf_miscl_min < self.min_conf).nonzero().squeeze() if self.early_stop else idx_to_fool
-                        
+                    idx_to_fool = (margin_min > 0.0).nonzero().squeeze() if self.early_stop else (margin_min > -float('inf')).nonzero().squeeze()
+                    
                     x_curr, x_best_curr = x[idx_to_fool], x_best[idx_to_fool]
                     y_curr, margin_min_curr = y[idx_to_fool], margin_min[idx_to_fool]
             
                     p = self.p_selection(i_iter)
-                    #p = self.p_selection_soft(i_iter)
                     s = max(int(round(np.sqrt(p * n_features / c))), 1)
                     center_h = np.random.randint(0, h-s)
                     center_w = np.random.randint(0, w-s)
@@ -164,33 +146,29 @@ class SquareAttack():
         
                     x_new = self.check_shape(x_new)
                     if self.eot_iter == 1:
-                        margin, conf_miscl = self.model.fmargin(x_new, y_curr) if not self.targeted else self.model.fmargin_targeted(x_new, y_curr)
+                        margin = self.model.fmargin(x_new, y_curr)
                     else:
                         margin = torch.zeros(x_new.shape[0]).to(self.device)
                         for _ in range(self.eot_iter):
-                            margin_min_temp, _ = self.model.fmargin(x_new, y_curr) if not self.targeted else self.model.fmargin_targeted(x_new, y_curr)
+                            margin_min_temp = self.model.fmargin(x_new, y_curr)
                             margin += (margin_min_temp / self.eot_iter)
                     
                     idx_improved = (margin < margin_min_curr).float()
                     margin_min[idx_to_fool] = idx_improved * margin + (1. - idx_improved) * margin_min_curr
-                    #conf_miscl_min[idx_to_fool] = idx_improved * conf_miscl + (1. - idx_improved) * conf_miscl_min
                     idx_improved = idx_improved.reshape([-1, *[1]*len(x.shape[:-1])])
                     x_best[idx_to_fool] = idx_improved * x_new + (1. - idx_improved) * x_best_curr
                     n_queries[idx_to_fool] += 1.
             
-                    if self.min_conf is None:
-                        acc = (margin_min > 0.0).sum().float() / n_ex_total
-                        acc_corr = (margin_min > 0.0).float().mean()
-                        ind_succ = (margin_min <= 0.).nonzero().squeeze()
-                    else:
-                        acc = (conf_miscl_min < self.min_conf).sum().float() / n_ex_total
-                        acc_corr = (conf_miscl_min < self.min_conf).float().mean()
-                        ind_succ = (conf_miscl_min >= self.min_conf).nonzero().squeeze()
-                    if self.show_progr and ind_succ.numel() != 0:
+                    acc = (margin_min > 0.0).sum().float() / n_ex_total
+                    acc_corr = (margin_min > 0.0).float().mean()
+                    ind_succ = (margin_min <= 0.).nonzero().squeeze()
+                    
+                        
+                    if self.verbose and ind_succ.numel() != 0:
                         print('{}: acc={:.2%} acc_corr={:.2%} avg#q_ae={:.1f} med#q_ae={:.1f} loss={:.3f}'.
                             format(i_iter + 1, acc.item(), acc_corr.item(), n_queries[ind_succ].mean().item(), n_queries[ind_succ].median().item(), margin_min.mean()))
                     
-                    if acc == 0 and self.early_stop:
+                    if acc == 0 and self.verbose:
                         print('{}: acc={:.2%} acc_corr={:.2%} avg#q_ae={:.1f} med#q_ae={:.1f} loss={:.3f}'.
                             format(i_iter + 1, acc.item(), acc_corr.item(), n_queries[ind_succ].mean().item(), n_queries[ind_succ].median().item(), margin_min.mean()))
                         break
@@ -222,17 +200,13 @@ class SquareAttack():
                         center_w += s
                     center_h += s
                   
-                x_best = torch.clamp(x + delta_init/(delta_init**2).sum(dim=(1,2,3), keepdim=True) * self.eps, 0., 1.)
-                #margin_min = self.model.fmargin(x_best, y) if not self.targeted else self.model.fmargin_targeted(x_best, y)
-                margin_min, conf_miscl_min = self.model.fmargin(x_best, y) if not self.targeted else self.model.fmargin_targeted(x_best, y)
+                x_best = torch.clamp(x + delta_init/(delta_init**2).sum(dim=(1,2,3), keepdim=True).sqrt() * self.eps, 0., 1.)
+                margin_min = self.model.fmargin(x_best, y)
                 n_queries = torch.ones(x.shape[0]).to(self.device)
                 s_init = int(np.sqrt(self.p_init * n_features / c))
+                
                 for i_iter in range(self.n_queries):
-                    #idx_to_fool = (margin_min > 0.0).nonzero().squeeze() if self.early_stop else (margin_min > -float('inf')).nonzero().squeeze()
-                    if self.min_conf is None:
-                        idx_to_fool = (margin_min > 0.0).nonzero().squeeze() if self.early_stop else (margin_min > -float('inf')).nonzero().squeeze()
-                    else:
-                        idx_to_fool = (conf_miscl_min < self.min_conf).nonzero().squeeze() if self.early_stop else idx_to_fool
+                    idx_to_fool = (margin_min > 0.0).nonzero().squeeze() if self.early_stop else (margin_min > -float('inf')).nonzero().squeeze()
                     
                     x_curr, x_best_curr = x[idx_to_fool], x_best[idx_to_fool]
                     y_curr, margin_min_curr = y[idx_to_fool], margin_min[idx_to_fool]
@@ -262,7 +236,7 @@ class SquareAttack():
                         [1, 1, s, s]) * torch.from_numpy(np.random.choice([-1, 1], size=[x_curr.shape[0], c, 1, 1])).float().to(self.device)
                     old_deltas = delta_curr[:, :, center_h:center_h + s, center_w:center_w + s] / (1e-10 + norms_window_1)
                     new_deltas += old_deltas
-                    new_deltas = new_deltas / (new_deltas ** 2).sum(dim=(-2, -1), keepdim=True) * (torch.max(
+                    new_deltas = new_deltas / (new_deltas ** 2).sum(dim=(-2, -1), keepdim=True).sqrt() * (torch.max(
                         (self.eps * torch.ones(new_deltas.shape).to(self.device)) ** 2 - norms_image ** 2, torch.zeros(new_deltas.shape).to(
                         self.device)) / c + norms_windows ** 2).sqrt()
                     delta_curr[:, :, center_h_2:center_h_2+s2, center_w_2:center_w_2+s2] = 0.0
@@ -271,8 +245,8 @@ class SquareAttack():
                     x_new = torch.clamp(x_curr + self.eps * torch.ones(x_curr.shape).to(self.device) * delta_curr/(delta_curr ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt(), 0. ,1.)
                     
                     norms_image = ((x_new - x_curr) ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt()
-                    #margin = self.model.fmargin(x_new, y_curr) if not self.targeted else self.model.fmargin_targeted(x_best, y)
-                    margin, conf_miscl = self.model.fmargin(x_new, y_curr) if not self.targeted else self.model.fmargin_targeted(x_best, y)
+                    
+                    margin = self.model.fmargin(x_new, y_curr)
                     idx_improved = (margin < margin_min_curr).float()
                     margin_min[idx_to_fool] = idx_improved * margin + (1. - idx_improved) * margin_min_curr
                     idx_improved = idx_improved.reshape([-1, *[1]*len(x.shape[:-1])])
@@ -282,7 +256,7 @@ class SquareAttack():
                     acc = (margin_min > 0.0).sum().float() / n_ex_total
                     acc_corr = (margin_min > 0.0).float().mean()
                     ind_succ = (margin_min <= 0.).nonzero().squeeze()
-                    if acc_corr < 1. and self.show_progr:
+                    if acc_corr < 1. and self.verbose:
                         print('{}: acc={:.2%} acc_corr={:.2%} avg#q_ae={:.1f} med#q_ae={:.1f} loss={:.3f} max_pert={:.1f}'.
                             format(i_iter + 1, acc.item(), acc_corr.item(), n_queries[ind_succ].mean().item(), n_queries[ind_succ].median().item(), margin_min.mean(), norms_image.max().item()))
                     
@@ -324,6 +298,6 @@ class SquareAttack():
                 
                 acc[ind_to_fool[ind_curr]] = 0
                 adv[ind_to_fool[ind_curr]] = adv_curr[ind_curr].clone()
-                if self.show_acc: print('restart {} - robust accuracy: {:.2%} - cum. time: {:.1f} s'.format(counter, acc.float().mean(), time.time() - startt))
+                if self.verbose: print('restart {} - robust accuracy: {:.2%} - cum. time: {:.1f} s'.format(counter, acc.float().mean(), time.time() - startt))
             
         return 0, adv
