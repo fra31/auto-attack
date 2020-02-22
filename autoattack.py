@@ -9,7 +9,7 @@ import time
 class AutoAttack():
     def __init__(self, model, norm='Linf', eps=.3, seed=0, verbose=True,
                  attacks_to_run=['apgd-ce', 'apgd-dlr', 'fab', 'square'],
-                 plus=False):
+                 plus=False, is_tf_model=False):
         self.model = model
         self.norm = norm
         assert norm in ['Linf', 'L2']
@@ -18,22 +18,47 @@ class AutoAttack():
         self.verbose = verbose
         self.attacks_to_run = attacks_to_run if not plus else attacks_to_run.extend(['apgd-t', 'fab-t'])
         self.plus = plus
+        self.is_tf_model = is_tf_model
         
-        from autopgd_pt import APGDAttack
-        self.apgd = APGDAttack(self.model, n_restarts=5, n_iter=100, verbose=False,
-            eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed)
-        
-        from fab_pt import FABAttack
-        self.fab = FABAttack(self.model, n_restarts=5, n_iter=100, eps=self.epsilon, seed=self.seed,
-            norm=self.norm, verbose=False)
-        
-        from square import SquareAttack
-        self.square = SquareAttack(self.model, p_init=.8, n_queries=5000, eps=self.epsilon, norm=self.norm,
-            early_stop=True, n_restarts=1, seed=self.seed, verbose=False)
+        if not self.is_tf_model:
+            from autopgd_pt import APGDAttack
+            self.apgd = APGDAttack(self.model, n_restarts=5, n_iter=100, verbose=False,
+                eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed)
             
-        from autopgd_pt import APGDAttack_targeted
-        self.apgd_targeted = APGDAttack_targeted(self.model, n_restarts=1, n_iter=100, verbose=False,
-            eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed)
+            from fab_pt import FABAttack
+            self.fab = FABAttack(self.model, n_restarts=5, n_iter=100, eps=self.epsilon, seed=self.seed,
+                norm=self.norm, verbose=False)
+        
+            from square import SquareAttack
+            self.square = SquareAttack(self.model, p_init=.8, n_queries=5000, eps=self.epsilon, norm=self.norm,
+                early_stop=True, n_restarts=1, seed=self.seed, verbose=False)
+                
+            from autopgd_pt import APGDAttack_targeted
+            self.apgd_targeted = APGDAttack_targeted(self.model, n_restarts=1, n_iter=100, verbose=False,
+                eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed)
+    
+        else:
+            from autopgd_tf import APGDAttack
+            self.apgd = APGDAttack(self.model, n_restarts=5, n_iter=100, verbose=False,
+                eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed)
+            
+            from fab_tf import FABAttack
+            self.fab = FABAttack(self.model, n_restarts=5, n_iter=100, eps=self.epsilon, seed=self.seed,
+                norm=self.norm, verbose=False)
+        
+            from square import SquareAttack
+            self.square = SquareAttack(self.model.predict, p_init=.8, n_queries=5000, eps=self.epsilon, norm=self.norm,
+                early_stop=True, n_restarts=1, seed=self.seed, verbose=False)
+                
+            from autopgd_tf import APGDAttack_targeted
+            self.apgd_targeted = APGDAttack_targeted(self.model, n_restarts=1, n_iter=100, verbose=False,
+                eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed)
+    
+    def get_logits(self, x):
+        if not self.is_tf_model:
+            return self.model(x)
+        else:
+            return self.model.predict(x)
     
     def run_standard_evaluation(self, x_orig, y_orig, bs=250):
         # update attacks list if plus activated after initialization
@@ -53,7 +78,7 @@ class AutoAttack():
                 x, y = x_orig[counter * bs:(counter + 1) * bs].clone().cuda(), y_orig[counter * bs:(counter + 1) * bs].clone().cuda()
                 x_adv = x.clone()
                 
-                output = self.model(x)
+                output = self.get_logits(x)
                 acc = (output.max(1)[1] == y).float()
                 ind_to_fool = (output.max(1)[1] == y).nonzero().squeeze()
                 
@@ -67,12 +92,12 @@ class AutoAttack():
                     self.apgd.seed = time.time()
                     _, adv_curr = self.apgd.perturb(x_to_fool, y_to_fool, cheap=True)
                     
-                    ind_succ = (self.model(adv_curr).max(1)[1] != y[ind_to_fool]).nonzero().squeeze()
+                    ind_succ = (self.get_logits(adv_curr).max(1)[1] != y[ind_to_fool]).nonzero().squeeze()
                     x_adv[ind_to_fool[ind_succ]] = adv_curr[ind_succ] + 0.
                     acc[ind_to_fool[ind_succ]] = 0.
                     
                     if self.verbose:
-                        print('robust accuracy batch {} after APGD-CE \t {:.1%} \t (time batch: {:.1f} s)'.format(
+                        print('robust accuracy batch {} after APGD-CE \t\t {:.1%} \t (time batch: {:.1f} s)'.format(
                             counter + 1, acc.float().mean(), time.time() - startt))
                     
                 # apgd on DLR loss
@@ -85,13 +110,14 @@ class AutoAttack():
                     self.apgd.seed = time.time()
                     _, adv_curr = self.apgd.perturb(x_to_fool, y_to_fool, cheap=True)
                     
-                    ind_succ = (self.model(adv_curr).max(1)[1] != y[ind_to_fool]).nonzero().squeeze()
+                    ind_succ = (self.get_logits(adv_curr).max(1)[1] != y[ind_to_fool]).nonzero().squeeze()
                     x_adv[ind_to_fool[ind_succ]] = adv_curr[ind_succ] + 0.
                     acc[ind_to_fool[ind_succ]] = 0.
                     
                     if self.verbose:
-                        print('robust accuracy batch {} after APGD-DLR \t {:.1%} \t (time batch: {:.1f} s)'.format(
-                            counter + 1, acc.float().mean(), time.time() - startt))
+                        space = '\t' if counter > 8 else '\t\t'
+                        print('robust accuracy batch {} after APGD-DLR {} {:.1%} \t (time batch: {:.1f} s)'.format(
+                            counter + 1, space, acc.float().mean(), time.time() - startt))
                     
                 # fab
                 ind_to_fool = (acc == 1.).nonzero().squeeze()
@@ -103,12 +129,12 @@ class AutoAttack():
                     self.fab.seed = time.time()
                     adv_curr = self.fab.perturb(x_to_fool, y_to_fool)
                     
-                    ind_succ = (self.model(adv_curr).max(1)[1] != y[ind_to_fool]).nonzero().squeeze()
+                    ind_succ = (self.get_logits(adv_curr).max(1)[1] != y[ind_to_fool]).nonzero().squeeze()
                     x_adv[ind_to_fool[ind_succ]] = adv_curr[ind_succ] + 0.
                     acc[ind_to_fool[ind_succ]] = 0.
                     
                     if self.verbose:
-                        print('robust accuracy batch {} after FAB \t {:.1%} \t (time batch: {:.1f} s)'.format(
+                        print('robust accuracy batch {} after FAB \t\t {:.1%} \t (time batch: {:.1f} s)'.format(
                             counter + 1, acc.float().mean(), time.time() - startt))
                     
                 # square
@@ -120,12 +146,12 @@ class AutoAttack():
                     self.square.seed = time.time()
                     _, adv_curr = self.square.perturb(x_to_fool, y_to_fool)
                     
-                    ind_succ = (self.model(adv_curr).max(1)[1] != y[ind_to_fool]).nonzero().squeeze()
+                    ind_succ = (self.get_logits(adv_curr).max(1)[1] != y[ind_to_fool]).nonzero().squeeze()
                     x_adv[ind_to_fool[ind_succ]] = adv_curr[ind_succ] + 0.
                     acc[ind_to_fool[ind_succ]] = 0.
                     
                     if self.verbose:
-                        print('robust accuracy batch {} after Square \t {:.1%} \t (time batch: {:.1f} s)'.format(
+                        print('robust accuracy batch {} after Square \t\t {:.1%} \t (time batch: {:.1f} s)'.format(
                             counter + 1, acc.float().mean(), time.time() - startt))
                     
                 # apgd targeted
@@ -137,12 +163,12 @@ class AutoAttack():
                     self.apgd_targeted.seed = time.time()
                     _, adv_curr = self.apgd_targeted.perturb(x_to_fool, y_to_fool, cheap=True)
                     
-                    ind_succ = (self.model(adv_curr).max(1)[1] != y[ind_to_fool]).nonzero().squeeze()
+                    ind_succ = (self.get_logits(adv_curr).max(1)[1] != y[ind_to_fool]).nonzero().squeeze()
                     x_adv[ind_to_fool[ind_succ]] = adv_curr[ind_succ] + 0.
                     acc[ind_to_fool[ind_succ]] = 0.
                     
                     if self.verbose:
-                        print('robust accuracy batch {} after APGD-T \t {:.1%} \t (time batch: {:.1f} s)'.format(
+                        print('robust accuracy batch {} after APGD-T \t\t {:.1%} \t (time batch: {:.1f} s)'.format(
                             counter + 1, acc.float().mean(), time.time() - startt))
                 
                 # fab targeted
@@ -155,12 +181,12 @@ class AutoAttack():
                     self.fab.seed = time.time()
                     adv_curr = self.fab.perturb(x_to_fool, y_to_fool)
                     
-                    ind_succ = (self.model(adv_curr).max(1)[1] != y[ind_to_fool]).nonzero().squeeze()
+                    ind_succ = (self.get_logits(adv_curr).max(1)[1] != y[ind_to_fool]).nonzero().squeeze()
                     x_adv[ind_to_fool[ind_succ]] = adv_curr[ind_succ] + 0.
                     acc[ind_to_fool[ind_succ]] = 0.
                     
                     if self.verbose:
-                        print('robust accuracy batch {} after FAB-T \t {:.1%} \t (time batch: {:.1f} s)'.format(
+                        print('robust accuracy batch {} after FAB-T \t {:.1%} \t\t (time batch: {:.1f} s)'.format(
                             counter + 1, acc.float().mean(), time.time() - startt))
                 
                 adv[counter * bs:(counter + 1) * bs] = x_adv.cpu() + 0.
@@ -183,7 +209,7 @@ class AutoAttack():
         acc = 0.
         for counter in range(n_batches):
             x, y = x_orig[counter * bs:(counter + 1) * bs].clone().cuda(), y_orig[counter * bs:(counter + 1) * bs].clone().cuda()
-            output = self.model(x)
+            output = self.get_logits(x)
             acc += (output.max(1)[1] == y).float().sum()
             
         if self.verbose:
@@ -216,3 +242,10 @@ class AutoAttack():
                     c.upper(), space, acc_indiv,  time.time() - startt))
         
         return adv
+        
+    def cheap(self):
+        self.apgd.n_restarts = 1
+        self.fab.n_restarts = 1
+        self.apgd_targeted.n_restarts = 1
+        self.square.n_queries = 1000
+        

@@ -37,12 +37,6 @@ class APGDAttack():
     def check_shape(self, x):
         return x if len(x.shape) > 0 else np.expand_dims(x, 0)
     
-    def dlr_loss(self, x, y):
-        x_sorted, ind_sorted = x.sort(dim=1)
-        ind = (ind_sorted[:, -1] == y).float()
-        
-        return -(x[np.arange(x.shape[0]), y] - x_sorted[:, -2] * ind - x_sorted[:, -1] * (1. - ind)) / (x_sorted[:, -1] - x_sorted[:, -3] + 1e-12)
-    
     def attack_single_run(self, x_in, y_in):
         x = x_in if len(x_in.shape) == 4 else x_in.unsqueeze(0)
         y = y_in.clone() if len(y_in.shape) == 1 else y_in.clone().unsqueeze(0)
@@ -65,21 +59,16 @@ class APGDAttack():
         acc_steps = torch.zeros_like(loss_best_steps)
         
         if self.loss == 'ce':
-            criterion_indiv = nn.CrossEntropyLoss(reduce=False, reduction='none')
+            criterion_indiv = self.model.get_logits_loss_grad_xent
         elif self.loss == 'dlr':
-            criterion_indiv = self.dlr_loss
+            criterion_indiv = self.model.get_logits_loss_grad_dlr
         else:
             raise ValueError('unknowkn loss')
         
-        x_adv.requires_grad_()
         grad = torch.zeros_like(x)
         for _ in range(self.eot_iter):
-            with torch.enable_grad():
-                logits = self.model(x_adv) # 1 forward pass (eot_iter = 1)
-                loss_indiv = criterion_indiv(logits, y)
-                loss = loss_indiv.sum()
-                    
-            grad += torch.autograd.grad(loss, [x_adv])[0].detach() # 1 backward pass (eot_iter = 1)
+            logits, loss_indiv, grad_curr = criterion_indiv(x_adv, y)
+            grad += grad_curr
             
         grad /= float(self.eot_iter)
         grad_best = grad.clone()
@@ -124,17 +113,11 @@ class APGDAttack():
                 x_adv = x_adv_1 + 0.
             
             ### get gradient
-            x_adv.requires_grad_()
             grad = torch.zeros_like(x)
             for _ in range(self.eot_iter):
-                with torch.enable_grad():
-                    logits = self.model(x_adv) # 1 forward pass (eot_iter = 1)
-                    loss_indiv = criterion_indiv(logits, y)
-                    loss = loss_indiv.sum()
+                logits, loss_indiv, grad_curr = criterion_indiv(x_adv, y)
+                grad += grad_curr
                 
-                grad += torch.autograd.grad(loss, [x_adv])[0].detach() # 1 backward pass (eot_iter = 1)
-                
-            
             grad /= float(self.eot_iter)
             
             pred = logits.detach().max(1)[1] == y
@@ -181,7 +164,7 @@ class APGDAttack():
         assert self.norm in ['Linf', 'L2']
         
         adv = x.clone()
-        acc = self.model(x).max(1)[1] == y
+        acc = self.model.predict(x).max(1)[1] == y
         loss = -1e10 * torch.ones_like(acc).float()
         if self.verbose:
             print('-------------------------- running {}-attack with epsilon {:.4f} --------------------------'.format(self.norm, self.eps))
@@ -235,7 +218,7 @@ class APGDAttack_targeted():
     def check_shape(self, x):
         return x if len(x.shape) > 0 else np.expand_dims(x, 0)
     
-    def dlr_loss_targeted(self, x, y, y_target):
+    def custom_loss_targeted(self, x, y, y_target):
         x_sorted, ind_sorted = x.sort(dim=1)
         
         return -(x[np.arange(x.shape[0]), y] - x[np.arange(x.shape[0]), y_target]) / (x_sorted[:, -1] - .5 * x_sorted[:, -3] - .5 * x_sorted[:, -4] + 1e-12)
@@ -261,18 +244,13 @@ class APGDAttack_targeted():
         loss_best_steps = torch.zeros([self.n_iter + 1, x.shape[0]])
         acc_steps = torch.zeros_like(loss_best_steps)
         
-        output = self.model(x)
+        output = self.model.predict(x)
         y_target = output.sort(dim=1)[1][:, -self.target_class]
         
-        x_adv.requires_grad_()
         grad = torch.zeros_like(x)
         for _ in range(self.eot_iter):
-            with torch.enable_grad():
-                logits = self.model(x_adv) # 1 forward pass (eot_iter = 1)
-                loss_indiv = self.dlr_loss_targeted(logits, y, y_target)
-                loss = loss_indiv.sum()
-            
-            grad += torch.autograd.grad(loss, [x_adv])[0].detach() # 1 backward pass (eot_iter = 1)
+            logits, loss_indiv, grad_curr = self.model.get_logits_loss_grad_target(x_adv, y, y_target)
+            grad += grad_curr
             
         grad /= float(self.eot_iter)
         grad_best = grad.clone()
@@ -317,15 +295,10 @@ class APGDAttack_targeted():
                 x_adv = x_adv_1 + 0.
             
             ### get gradient
-            x_adv.requires_grad_()
             grad = torch.zeros_like(x)
             for _ in range(self.eot_iter):
-                with torch.enable_grad():
-                    logits = self.model(x_adv) # 1 forward pass (eot_iter = 1)
-                    loss_indiv = self.dlr_loss_targeted(logits, y, y_target)
-                    loss = loss_indiv.sum()
-                
-                grad += torch.autograd.grad(loss, [x_adv])[0].detach() # 1 backward pass (eot_iter = 1)
+                logits, loss_indiv, grad_curr = self.model.get_logits_loss_grad_target(x_adv, y, y_target)
+                grad += grad_curr
                 
             grad /= float(self.eot_iter)
             
@@ -373,7 +346,7 @@ class APGDAttack_targeted():
         assert self.norm in ['Linf', 'L2']
         
         adv = x.clone()
-        acc = self.model(x).max(1)[1] == y
+        acc = self.model.predict(x).max(1)[1] == y
         loss = -1e10 * torch.ones_like(acc).float()
         if self.verbose:
             print('-------------------------- running {}-attack with epsilon {:.4f} --------------------------'.format(self.norm, self.eps))
