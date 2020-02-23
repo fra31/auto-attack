@@ -61,12 +61,17 @@ class AutoAttack():
             return self.model.predict(x)
     
     def run_standard_evaluation(self, x_orig, y_orig, bs=250):
-        # update attacks list if plus activated after initialization
+        # update attacks list if plus activated or deactivated after initialization
         if self.plus:
             if not 'apgd-t' in self.attacks_to_run:
                 self.attacks_to_run.extend(['apgd-t'])
             if not 'fab-t' in self.attacks_to_run:
                 self.attacks_to_run.extend(['fab-t'])
+        else:
+            if 'apgd-t' in self.attacks_to_run:
+                self.attacks_to_run.remove('apgd-t')
+            if 'fab-t' in self.attacks_to_run:
+                self.attacks_to_run.remove('fab-t')
         
         with torch.no_grad():
             n_batches = x_orig.shape[0] // bs
@@ -186,7 +191,7 @@ class AutoAttack():
                     acc[ind_to_fool[ind_succ]] = 0.
                     
                     if self.verbose:
-                        print('robust accuracy batch {} after FAB-T \t {:.1%} \t\t (time batch: {:.1f} s)'.format(
+                        print('robust accuracy batch {} after FAB-T \t\t {:.1%} \t\t (time batch: {:.1f} s)'.format(
                             counter + 1, acc.float().mean(), time.time() - startt))
                 
                 adv[counter * bs:(counter + 1) * bs] = x_adv.cpu() + 0.
@@ -248,4 +253,5 @@ class AutoAttack():
         self.fab.n_restarts = 1
         self.apgd_targeted.n_restarts = 1
         self.square.n_queries = 1000
-        
+        self.plus = False
+

@@ -3,7 +3,7 @@ import numpy as np
 import torch
 
 class ModelAdapter():
-    def __init__(self, logits, x, y, y_target, sess):
+    def __init__(self, logits, x, y, sess):
         self.logits = logits
         self.sess = sess
         self.x_input = x
@@ -24,7 +24,7 @@ class ModelAdapter():
         self.grad_dlr = tf.gradients(self.dlr, self.x_input)[0]
         
         # targeted dlr loss
-        self.y_target = y_target
+        self.y_target = tf.placeholder(tf.int64, shape=[None])
         self.dlr_target = dlr_loss_targeted(self.logits, self.y_input, self.y_target)
         self.grad_target = tf.gradients(self.dlr_target, self.x_input)[0]
     
