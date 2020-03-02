@@ -691,7 +691,7 @@ class FABAttack():
                             res = (x_to_fool - adv_curr).abs().view(x_to_fool.shape[0], -1).max(1)[0]
                         elif self.norm == 'L2':
                             res = ((x_to_fool - adv_curr) ** 2).view(x_to_fool.shape[0], -1).sum(dim=-1).sqrt()
-                        acc_curr = torch.max(acc_curr, res > self.eps + 1e-6)
+                        acc_curr = torch.max(acc_curr, res > self.eps)
                         
                         ind_curr = (acc_curr == 0).nonzero().squeeze()
                         acc[ind_to_fool[ind_curr]] = 0
@@ -716,7 +716,7 @@ class FABAttack():
                                 res = (x_to_fool - adv_curr).abs().view(x_to_fool.shape[0], -1).max(1)[0]
                             elif self.norm == 'L2':
                                 res = ((x_to_fool - adv_curr) ** 2).view(x_to_fool.shape[0], -1).sum(dim=-1).sqrt()
-                            acc_curr = torch.max(acc_curr, res > self.eps + 1e-6)
+                            acc_curr = torch.max(acc_curr, res > self.eps)
                             
                             ind_curr = (acc_curr == 0).nonzero().squeeze()
                             acc[ind_to_fool[ind_curr]] = 0
