@@ -188,6 +188,9 @@ class SquareAttack():
                 n_features = c * h * w
                 n_ex_total = x.shape[0]
                 x, y = x.clone()[corr_classified], y.clone()[corr_classified]
+                x = self.check_shape(x)
+                if len(y.shape) == 0:
+                    y = y.unsqueeze(0)
                 delta_init = torch.zeros(x.shape).to(self.device)
                 s = h//5
                 sp_init = (h - s*5)//2
@@ -208,9 +211,9 @@ class SquareAttack():
                 for i_iter in range(self.n_queries):
                     idx_to_fool = (margin_min > 0.0).nonzero().squeeze() if self.early_stop else (margin_min > -float('inf')).nonzero().squeeze()
                     
-                    x_curr, x_best_curr = x[idx_to_fool], x_best[idx_to_fool]
+                    x_curr, x_best_curr = self.check_shape(x[idx_to_fool]), self.check_shape(x_best[idx_to_fool])
                     y_curr, margin_min_curr = y[idx_to_fool], margin_min[idx_to_fool]
-            
+                    
                     delta_curr = x_best_curr - x_curr
                     p = self.p_selection(i_iter)
                     s = max(int(round(np.sqrt(p * n_features / c))), 3)
@@ -243,6 +246,7 @@ class SquareAttack():
                     delta_curr[:, :, center_h:center_h+s, center_w:center_w+s] = new_deltas + 0
                         
                     x_new = torch.clamp(x_curr + self.eps * torch.ones(x_curr.shape).to(self.device) * delta_curr/(delta_curr ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt(), 0. ,1.)
+                    x_new = self.check_shape(x_new)
                     
                     norms_image = ((x_new - x_curr) ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt()
                     
