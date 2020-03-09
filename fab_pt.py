@@ -50,7 +50,8 @@ class FABAttack():
             loss_fn=None,
             verbose=False,
             seed=0,
-            targeted=False):
+            targeted=False,
+            device=None):
         """ FAB-attack implementation in pytorch """
 
         self.predict = predict
@@ -65,6 +66,7 @@ class FABAttack():
         self.verbose = verbose
         self.seed = seed
         self.target_class = None
+        self.device = device
     
     def _get_predicted_label(self, x):
         with torch.no_grad():
@@ -347,7 +349,7 @@ class FABAttack():
         :param y:    clean labels, if None we use the predicted labels
         """
 
-        self.device = x.device
+        #self.device = x.device
         self.orig_dim = list(x.shape[1:])
         self.ndims = len(self.orig_dim)
 
@@ -525,7 +527,8 @@ class FABAttack():
         :param y:    clean labels, if None we use the predicted labels
         """
 
-        self.device = x.device
+        if self.device is None:
+            self.device = x.device
         self.orig_dim = list(x.shape[1:])
         self.ndims = len(self.orig_dim)
 
