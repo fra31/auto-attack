@@ -44,7 +44,7 @@ class APGDAttack():
         return -(x[np.arange(x.shape[0]), y] - x_sorted[:, -2] * ind - x_sorted[:, -1] * (1. - ind)) / (x_sorted[:, -1] - x_sorted[:, -3] + 1e-12)
     
     def attack_single_run(self, x_in, y_in):
-        x = x_in if len(x_in.shape) == 4 else x_in.unsqueeze(0)
+        x = x_in.clone() if len(x_in.shape) == 4 else x_in.clone().unsqueeze(0)
         y = y_in.clone() if len(y_in.shape) == 1 else y_in.clone().unsqueeze(0)
         
         self.n_iter_2, self.n_iter_min, self.size_decr = max(int(0.22 * self.n_iter), 1), max(int(0.06 * self.n_iter), 1), max(int(0.03 * self.n_iter), 1)
@@ -177,7 +177,7 @@ class APGDAttack():
               
         return x_best, acc, loss_best, x_best_adv
     
-    def perturb(self, x, y, cheap=True):
+    def perturb(self, x, y, best_loss=False, cheap=True):
         assert self.norm in ['Linf', 'L2']
         
         adv = x.clone()
@@ -188,29 +188,44 @@ class APGDAttack():
             print('initial accuracy: {:.2%}'.format(acc.float().mean()))
         startt = time.time()
         
-        torch.random.manual_seed(self.seed)
-        torch.cuda.random.manual_seed(self.seed)
-        
-        if not cheap:
-            raise ValueError('not implemented yet')
+        if not best_loss:
+            torch.random.manual_seed(self.seed)
+            torch.cuda.random.manual_seed(self.seed)
+            
+            if not cheap:
+                raise ValueError('not implemented yet')
+            
+            else:
+                for counter in range(self.n_restarts):
+                    ind_to_fool = acc.nonzero().squeeze()
+                    if len(ind_to_fool.shape) == 0: ind_to_fool = ind_to_fool.unsqueeze(0)
+                    if ind_to_fool.numel() != 0:
+                        x_to_fool, y_to_fool = x[ind_to_fool].clone(), y[ind_to_fool].clone()
+                        best_curr, acc_curr, loss_curr, adv_curr = self.attack_single_run(x_to_fool, y_to_fool)
+                        ind_curr = (acc_curr == 0).nonzero().squeeze()
+                        #
+                        acc[ind_to_fool[ind_curr]] = 0
+                        adv[ind_to_fool[ind_curr]] = adv_curr[ind_curr].clone()
+                        if self.verbose:
+                            print('restart {} - robust accuracy: {:.2%} - cum. time: {:.1f} s'.format(
+                                counter, acc.float().mean(), time.time() - startt))
+            
+            return acc, adv
         
         else:
+            adv_best = x.detach().clone()
+            loss_best = torch.ones([x.shape[0]]).cuda() * (-float('inf'))
             for counter in range(self.n_restarts):
-                ind_to_fool = acc.nonzero().squeeze()
-                if len(ind_to_fool.shape) == 0: ind_to_fool = ind_to_fool.unsqueeze(0)
-                if ind_to_fool.numel() != 0:
-                    x_to_fool, y_to_fool = x[ind_to_fool].clone(), y[ind_to_fool].clone()
-                    best_curr, acc_curr, loss_curr, adv_curr = self.attack_single_run(x_to_fool, y_to_fool)
-                    ind_curr = (acc_curr == 0).nonzero().squeeze()
-                    #
-                    acc[ind_to_fool[ind_curr]] = 0
-                    adv[ind_to_fool[ind_curr]] = adv_curr[ind_curr].clone()
-                    if self.verbose:
-                        print('restart {} - robust accuracy: {:.2%} - cum. time: {:.1f} s'.format(
-                            counter, acc.float().mean(), time.time() - startt))
-        
-        return acc, adv
-        
+                best_curr, _, loss_curr, _ = self.attack_single_run(x, y)
+                ind_curr = (loss_curr > loss_best).nonzero().squeeze()
+                adv_best[ind_curr] = best_curr[ind_curr] + 0.
+                loss_best[ind_curr] = loss_curr[ind_curr] + 0.
+            
+                if self.verbose:
+                    print('restart {} - loss: {:.5f}'.format(counter, loss_best.sum()))
+            
+            return loss_best, adv_best
+
 class APGDAttack_targeted():
     def __init__(self, model, n_iter=100, norm='Linf', n_restarts=1, eps=None,
                  seed=0, eot_iter=1, rho=.75, verbose=False):

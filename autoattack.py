@@ -109,11 +109,13 @@ class AutoAttack():
 
                 n_batches = int(np.ceil(num_robust / bs))
 
-                robust_lin_idcs = torch.nonzero(robust_flags, as_tuple=False).squeeze()
+                robust_lin_idcs = torch.nonzero(robust_flags, as_tuple=False)
+                if num_robust > 1:
+                    robust_lin_idcs.squeeze_()
                 
                 for batch_idx in range(n_batches):
                     start_idx = batch_idx * bs
-                    end_idx = min((batch_idx + 1) * bs, x_orig.shape[0])
+                    end_idx = min((batch_idx + 1) * bs, num_robust)
 
                     batch_datapoint_idcs = robust_lin_idcs[start_idx:end_idx]
                     x = x_orig[batch_datapoint_idcs, :].clone().to(self.device)
