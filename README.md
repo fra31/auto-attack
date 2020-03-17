@@ -1,4 +1,8 @@
-# [AutoAttack](https://arxiv.org/abs/2003.01690)
+# AutoAttack
+
+"Reliable evaluation of adversarial robustness with an ensemble of diverse parameter-free attacks"\
+*Francesco Croce*, *Matthias Hein*\
+[https://arxiv.org/abs/2003.01690](https://arxiv.org/abs/2003.01690)
 
 We propose to use an ensemble of four diverse attacks to reliably evaluate robustness:
 + **APGD-CE**, our new step size-free version of PGD on the cross-entropy,
@@ -8,13 +12,13 @@ We propose to use an ensemble of four diverse attacks to reliably evaluate robus
 
 **Note**: we fix all the hyperparameters of the attacks, so no tuning is required to test every new classifier.
 
-**Budget**: we use 100 iterations and 5 random restarts for the two versions of APGD and FAB and set a query limit of 5000 for Square Attack. For a faster evaluation, see below how to activate a cheaper version. Note that APGD is the fastest of the attacks.
+**Budget**: we use 100 iterations and 5 random restarts for the two versions of APGD and FAB and set a query limit of 5000 for Square Attack. For a faster evaluation, see below.
 
-Adversarial defenses evaluation
+# Adversarial Defenses Evaluation
 We here list adversarial defenses recently proposed and evaluated with AutoAttack (AA) and AutoAttack+ (AA+), considering the Linf-threat model.
 We include the source of the model, i.e. if is publicly *available*, if we received it from the *authors* or if we *retrained* it, the clean accuracy and the reported robust accuracy (note that might be calculated on a subset of the test set or on different models trained with the same defense). The robust accuracy for AA and AA+ is on the full test set.
 
-We plan to add new models as they appear and are made available.
+We plan to add new models as they appear and are made available. Feel free to suggest new defenses to test!
 
 ## CIFAR-10
 The robust accuracy is evaluated at `eps = 8/255`, except for those marked with * for which `eps = 0.031`, where `eps` is the maximal Linf-norm allowed for the adversarial perturbations. The `eps` used is the same set in the original papers.
