@@ -15,8 +15,11 @@ We propose to use an ensemble of four diverse attacks to reliably evaluate robus
 **Budget**: we use 100 iterations and 5 random restarts for the two versions of APGD and FAB and set a query limit of 5000 for Square Attack. For a faster evaluation, see below.
 
 # Adversarial Defenses Evaluation
-We here list adversarial defenses recently proposed and evaluated with AutoAttack (AA) and AutoAttack+ (AA+), considering the Linf-threat model.
-We include the source of the model, i.e. if is publicly *available*, if we received it from the *authors* or if we *retrained* it, the clean accuracy and the reported robust accuracy (note that might be calculated on a subset of the test set or on different models trained with the same defense). The robust accuracy for AA and AA+ is on the full test set.
+We here list adversarial defenses, in the Linf-threat model, recently proposed and evaluated with
++ AutoAttack (**AA**), as described above,
++ AutoAttack+ (**AA+**), i.e. AA with the addition of the targeted versions of APGD-DLR and FAB (see below for details).
+
+We report the source of the model, i.e. if is publicly *available*, if we received it from the *authors* or if we *retrained* it, the clean accuracy and the reported robust accuracy (note that might be calculated on a subset of the test set or on different models trained with the same defense). The robust accuracy for AA and AA+ is on the full test set.
 
 We plan to add new models as they appear and are made available. Feel free to suggest new defenses to test!
 
