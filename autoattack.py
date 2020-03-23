@@ -89,7 +89,7 @@ class AutoAttack():
 
                 x = x_orig[start_idx:end_idx, :].clone().to(self.device)
                 y = y_orig[start_idx:end_idx].clone().to(self.device)
-                output = self.model(x)
+                output = self.get_logits(x)
                 correct_batch = y.eq(output.max(dim=1)[1])
                 robust_flags[start_idx:end_idx] = correct_batch.detach().to(robust_flags.device)
 
@@ -163,7 +163,7 @@ class AutoAttack():
                     else:
                         raise ValueError('Attack not supported')
                 
-                    output = self.model(adv_curr)
+                    output = self.get_logits(adv_curr)
                     false_batch = ~y.eq(output.max(dim=1)[1]).to(robust_flags.device)
                     non_robust_lin_idcs = batch_datapoint_idcs[false_batch]
                     robust_flags[non_robust_lin_idcs] = False
