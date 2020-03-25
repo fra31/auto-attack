@@ -24,13 +24,14 @@ We report the source of the model, i.e. if is publicly *available*, if we receiv
 We plan to add new models as they appear and are made available. Feel free to suggest new defenses to test!
 
 ## CIFAR-10
-The robust accuracy is evaluated at `eps = 8/255`, except for those marked with * for which `eps = 0.031`, where `eps` is the maximal Linf-norm allowed for the adversarial perturbations. The `eps` used is the same set in the original papers.
+The robust accuracy is evaluated at `eps = 8/255`, except for those marked with * for which `eps = 0.031`, where `eps` is the maximal Linf-norm allowed for the adversarial perturbations. The `eps` used is the same set in the original papers.\
+**Note**: ‡ indicates models which exploit additional data for training (e.g. unlabeled data, pre-training).
 
 |#    |paper           |model     |clean         |report. |AA  |AA+|
 |:---:|---|:---:|---:|---:|---:|---:|
-|**1**| [(Carmon et al., 2019)](https://arxiv.org/abs/1905.13736)| *available*| 89.69| 62.5| 59.65| 59.50|
-|**2**| [(Alayrac et al., 2019)](https://arxiv.org/abs/1905.13725)| *available*| 86.46| 56.30| 56.92| 56.01|
-|**3**| [(Hendrycks et al., 2019)](https://arxiv.org/abs/1901.09960)| *available*| 87.11| 57.4| 54.99| 54.86|
+|**1**| [(Carmon et al., 2019)](https://arxiv.org/abs/1905.13736)‡| *available*| 89.69| 62.5| 59.65| 59.50|
+|**2**| [(Alayrac et al., 2019)](https://arxiv.org/abs/1905.13725)‡| *available*| 86.46| 56.30| 56.92| 56.01|
+|**3**| [(Hendrycks et al., 2019)](https://arxiv.org/abs/1901.09960)‡| *available*| 87.11| 57.4| 54.99| 54.86|
 |**4**| [(Zhang et al., 2019b)](https://arxiv.org/abs/1901.08573)\*| *available*| 84.92| 56.43| 53.18| 53.04| [53.01](https://github.com/yaodongyu/TRADES)
 |**5**| [(Qin et al., 2019)](https://arxiv.org/abs/1907.02610v2)| *available*| 86.28| 52.81| 53.07| 52.82| 52.76<sup>(a)</sup>
 |**6**| [(Pang et al., 2020b)](https://arxiv.org/abs/2002.08619)\*| *available*| 84.42| 60.48| 52.38| |
@@ -59,12 +60,14 @@ The robust accuracy is computed at `eps = 0.3` in the Linf-norm.
 
 |#    |paper           |model     |clean         |report. |AA  |AA+|
 |:---:|---|:---:|---:|---:|---:|---:|
-|**1**| [(Zhang et al., 2019b)](https://arxiv.org/abs/1901.08573)| *available*| 99.48| 95.60| 92.76| 92.74| [92.58](https://github.com/yaodongyu/TRADES)
-|**2**| [(Atzmon et al., 2019)](https://arxiv.org/abs/1905.11911)| *available*| 99.35| 97.35| 90.85| |
-|**3**| [(Madry et al., 2018)](https://arxiv.org/abs/1706.06083)| *available*| 98.53| 89.62| 88.43| 88.43| [88.06](https://github.com/MadryLab/mnist_challenge)
-|**4**| [(Jang et al., 2019)](http://openaccess.thecvf.com/content_ICCV_2019/html/Jang_Adversarial_Defense_via_Learning_to_Generate_Diverse_Attacks_ICCV_2019_paper.html)| *available*| 98.47| 94.61| 87.99| |
-|**5**| [(Wong et al., 2020)](https://arxiv.org/abs/2001.03994)| *available*| 98.50| 88.77| 82.88| |
-|**6**| [(Taghanaki et al., 2019)](http://openaccess.thecvf.com/content_CVPR_2019/html/Taghanaki_A_Kernelized_Manifold_Mapping_to_Diminish_the_Effect_of_Adversarial_CVPR_2019_paper.html)| *retrained*| 98.86| 64.25| 0.00| |
+|**1**| [(Zhang et al., 2020)](https://arxiv.org/abs/1906.06316)| *available*| 98.38| 96.38| 93.95| 93.95|
+|**2**| [(Gowal et al., 2019)](https://arxiv.org/abs/1810.12715)| *available*| 98.34| 96.03| 92.75| 92.75|
+|**3**| [(Zhang et al., 2019b)](https://arxiv.org/abs/1901.08573)| *available*| 99.48| 95.60| 92.76| 92.74| [92.58](https://github.com/yaodongyu/TRADES)
+|**4**| [(Atzmon et al., 2019)](https://arxiv.org/abs/1905.11911)| *available*| 99.35| 97.35| 90.85| |
+|**5**| [(Madry et al., 2018)](https://arxiv.org/abs/1706.06083)| *available*| 98.53| 89.62| 88.43| 88.43| [88.06](https://github.com/MadryLab/mnist_challenge)
+|**6**| [(Jang et al., 2019)](http://openaccess.thecvf.com/content_ICCV_2019/html/Jang_Adversarial_Defense_via_Learning_to_Generate_Diverse_Attacks_ICCV_2019_paper.html)| *available*| 98.47| 94.61| 87.99| |
+|**7**| [(Wong et al., 2020)](https://arxiv.org/abs/2001.03994)| *available*| 98.50| 88.77| 82.88| |
+|**8**| [(Taghanaki et al., 2019)](http://openaccess.thecvf.com/content_CVPR_2019/html/Taghanaki_A_Kernelized_Manifold_Mapping_to_Diminish_the_Effect_of_Adversarial_CVPR_2019_paper.html)| *retrained*| 98.86| 64.25| 0.00| |
 
 # How to use AutoAttack
 
@@ -127,3 +130,13 @@ before running the evaluation, a 5 times cheaper version is used, i.e. no random
 
 ### Random seed
 It is possible to fix the random seed used for the attacks with, e.g., `adversary.seed = 0`. In this case the same seed is used for all the attacks used, otherwise a different random seed is picked for each attack.
+
+## Citation
+```
+@unpublished{croce2020reliable,
+    title = {Reliable evaluation of adversarial robustness with an ensemble of diverse parameter-free attacks},
+    authors = {Francesco Croce and Matthias Hein},
+    note = {preprint arXiv:2003.01690},
+    year = {2020}
+}
+```
