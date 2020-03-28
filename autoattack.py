@@ -67,17 +67,12 @@ class AutoAttack():
         return time.time() if self.seed is None else self.seed
     
     def run_standard_evaluation(self, x_orig, y_orig, bs=250):
-        # update attacks list if plus activated or deactivated after initialization
+        # update attacks list if plus activated or after initialization
         if self.plus:
             if not 'apgd-t' in self.attacks_to_run:
                 self.attacks_to_run.extend(['apgd-t'])
             if not 'fab-t' in self.attacks_to_run:
                 self.attacks_to_run.extend(['fab-t'])
-        else:
-            if 'apgd-t' in self.attacks_to_run:
-                self.attacks_to_run.remove('apgd-t')
-            if 'fab-t' in self.attacks_to_run:
-                self.attacks_to_run.remove('fab-t')
         
         with torch.no_grad():
             # calculate accuracy
@@ -118,13 +113,15 @@ class AutoAttack():
                     end_idx = min((batch_idx + 1) * bs, num_robust)
 
                     batch_datapoint_idcs = robust_lin_idcs[start_idx:end_idx]
+                    if len(batch_datapoint_idcs.shape) > 1:
+                        batch_datapoint_idcs.squeeze_(-1)
                     x = x_orig[batch_datapoint_idcs, :].clone().to(self.device)
                     y = y_orig[batch_datapoint_idcs].clone().to(self.device)
 
                     # make sure that x is a 4d tensor even if there is only a single datapoint left
                     if len(x.shape) == 3:
                         x.unsqueeze_(dim=0)
-                
+                    
                     # run attack
                     if attack == 'apgd-ce':
                         # apgd on cross-entropy loss

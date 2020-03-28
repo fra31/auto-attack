@@ -14,10 +14,6 @@ import torch
 from torch.autograd.gradcheck import zero_gradients
 import time
 
-#from advertorch.utils import replicate_input
-
-#from .base import Attack
-#from .base import LabelMixin
 
 DEFAULT_EPS_DICT_BY_NORM = {'Linf': .3, 'L2': 1., 'L1': 5.0}
 
@@ -51,7 +47,8 @@ class FABAttack():
             verbose=False,
             seed=0,
             targeted=False,
-            device=None):
+            device=None,
+            n_target_classes=9):
         """ FAB-attack implementation in pytorch """
 
         self.predict = predict
@@ -67,6 +64,7 @@ class FABAttack():
         self.seed = seed
         self.target_class = None
         self.device = device
+        self.n_target_classes = n_target_classes
     
     def _get_predicted_label(self, x):
         with torch.no_grad():
@@ -739,7 +737,7 @@ class FABAttack():
                                 counter, acc.float().mean(), self.eps, time.time() - startt))
 
             else:
-                for target_class in range(2, 11):
+                for target_class in range(2, self.n_target_classes + 2):
                     self.target_class = target_class
                     for counter in range(self.n_restarts):
                         ind_to_fool = acc.nonzero().squeeze()

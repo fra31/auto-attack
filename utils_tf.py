@@ -3,16 +3,18 @@ import numpy as np
 import torch
 
 class ModelAdapter():
-    def __init__(self, logits, x, y, sess):
+    def __init__(self, logits, x, y, sess, num_classes=10):
         self.logits = logits
         self.sess = sess
         self.x_input = x
         self.y_input = y
+        self.num_classes = num_classes
         
-        # gradients of logits (assuming 10 classes)
-        self.grads = [None] * 10
-        for cl in range(10):
-            self.grads[cl] = tf.gradients(self.logits[:, cl], self.x_input)[0]
+        # gradients of logits
+        if num_classes <= 100:
+            self.grads = [None] * num_classes
+            for cl in range(num_classes):
+                self.grads[cl] = tf.gradients(self.logits[:, cl], self.x_input)[0]
         
         # cross-entropy loss
         self.xent = tf.nn.sparse_softmax_cross_entropy_with_logits(
@@ -20,12 +22,12 @@ class ModelAdapter():
         self.grad_xent = tf.gradients(self.xent, self.x_input)[0]
         
         # dlr loss
-        self.dlr = dlr_loss(self.logits, self.y_input)
+        self.dlr = dlr_loss(self.logits, self.y_input, num_classes=self.num_classes)
         self.grad_dlr = tf.gradients(self.dlr, self.x_input)[0]
         
         # targeted dlr loss
         self.y_target = tf.placeholder(tf.int64, shape=[None])
-        self.dlr_target = dlr_loss_targeted(self.logits, self.y_input, self.y_target)
+        self.dlr_target = dlr_loss_targeted(self.logits, self.y_input, self.y_target, num_classes=self.num_classes)
         self.grad_target = tf.gradients(self.dlr_target, self.x_input)[0]
     
     def predict(self, x):
@@ -67,18 +69,18 @@ class ModelAdapter():
         
         return torch.from_numpy(logits_val).cuda(), torch.from_numpy(loss_indiv_val).cuda(), torch.from_numpy(grad_val).cuda()
 
-def dlr_loss(x, y):
+def dlr_loss(x, y, num_classes=10):
     x_sort = tf.contrib.framework.sort(x, axis=1)
-    y_onehot = tf.one_hot(y, 10)
+    y_onehot = tf.one_hot(y, num_classes)
     ### TODO: adapt to the case when the point is already misclassified
     loss = -(x_sort[:, -1] - x_sort[:, -2]) / (x_sort[:, -1] - x_sort[:, -3] + 1e-12)
 
     return loss
 
-def dlr_loss_targeted(x, y, y_target):
+def dlr_loss_targeted(x, y, y_target, num_classes=10):
     x_sort = tf.contrib.framework.sort(x, axis=1)
-    y_onehot = tf.one_hot(y, 10)
-    y_target_onehot = tf.one_hot(y_target, 10)
+    y_onehot = tf.one_hot(y, num_classes)
+    y_target_onehot = tf.one_hot(y_target, num_classes)
     loss = -(tf.reduce_sum(x * y_onehot, axis=1) - tf.reduce_sum(x * y_target_onehot, axis=1)) / (x_sort[:, -1] - .5 * x_sort[:, -3] - .5 * x_sort[:, -4] + 1e-12)
     
     return loss

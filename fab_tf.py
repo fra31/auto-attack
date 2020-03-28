@@ -89,6 +89,7 @@ class FABAttack():
 
     def get_diff_logits_grads_batch_targeted(self, imgs, la, la_target):
         ### TODO: get both gradients and values with a single pass
+        ### TODO: compute only for correct and target class
         g2 = self.model.grad_logits(imgs)
         y2 = self.model.predict(imgs)
         y2 = torch.stack([y2[torch.arange(imgs.shape[0]), la], y2[torch.arange(imgs.shape[0]), la_target]], dim=1)

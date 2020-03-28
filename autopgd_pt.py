@@ -177,8 +177,10 @@ class APGDAttack():
               
         return x_best, acc, loss_best, x_best_adv
     
-    def perturb(self, x, y, best_loss=False, cheap=True):
+    def perturb(self, x_in, y_in, best_loss=False, cheap=True):
         assert self.norm in ['Linf', 'L2']
+        x = x_in.clone() if len(x_in.shape) == 4 else x_in.clone().unsqueeze(0)
+        y = y_in.clone() if len(y_in.shape) == 1 else y_in.clone().unsqueeze(0)
         
         adv = x.clone()
         acc = self.model(x).max(1)[1] == y
@@ -256,7 +258,7 @@ class APGDAttack_targeted():
         return -(x[np.arange(x.shape[0]), y] - x[np.arange(x.shape[0]), y_target]) / (x_sorted[:, -1] - .5 * x_sorted[:, -3] - .5 * x_sorted[:, -4] + 1e-12)
     
     def attack_single_run(self, x_in, y_in):
-        x = x_in.clone() if len(x_in.shape) == 4 else x_in.unsqueeze(0)
+        x = x_in.clone() if len(x_in.shape) == 4 else x_in.clone().unsqueeze(0)
         y = y_in.clone() if len(y_in.shape) == 1 else y_in.clone().unsqueeze(0)
         
         self.n_iter_2, self.n_iter_min, self.size_decr = max(int(0.22 * self.n_iter), 1), max(int(0.06 * self.n_iter), 1), max(int(0.03 * self.n_iter), 1)
@@ -384,8 +386,10 @@ class APGDAttack_targeted():
               
         return x_best, acc, loss_best, x_best_adv
     
-    def perturb(self, x, y, best_loss=False, cheap=True):
+    def perturb(self, x_in, y_in, best_loss=False, cheap=True):
         assert self.norm in ['Linf', 'L2']
+        x = x_in.clone() if len(x_in.shape) == 4 else x_in.clone().unsqueeze(0)
+        y = y_in.clone() if len(y_in.shape) == 1 else y_in.clone().unsqueeze(0)
         
         adv = x.clone()
         acc = self.model(x).max(1)[1] == y
