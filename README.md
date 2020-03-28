@@ -19,11 +19,11 @@ We here list adversarial defenses, in the Linf-threat model, recently proposed a
 + AutoAttack (**AA**), as described above,
 + AutoAttack+ (**AA+**), i.e. AA with the addition of the targeted versions of APGD-DLR and FAB (see below for details).
 
-We report the source of the model, i.e. if is publicly *available*, if we received it from the *authors* or if we *retrained* it, the clean accuracy and the reported robust accuracy (note that might be calculated on a subset of the test set or on different models trained with the same defense). The robust accuracy for AA and AA+ is on the full test set.
+We report the source of the model, i.e. if it is publicly *available*, if we received it from the *authors* or if we *retrained* it, the clean accuracy and the reported robust accuracy (note that might be calculated on a subset of the test set or on different models trained with the same defense). The robust accuracy for AA and AA+ is on the full test set.
 
 We plan to add new models as they appear and are made available. Feel free to suggest new defenses to test!
 
-## CIFAR-10
+## CIFAR-10 - Linf
 The robust accuracy is evaluated at `eps = 8/255`, except for those marked with * for which `eps = 0.031`, where `eps` is the maximal Linf-norm allowed for the adversarial perturbations. The `eps` used is the same set in the original papers.\
 **Note**: ‡ indicates models which exploit additional data for training (e.g. unlabeled data, pre-training).
 
@@ -55,13 +55,13 @@ The robust accuracy is evaluated at `eps = 8/255`, except for those marked with 
 |**24**| [(Mustafa et al., 2019)](https://arxiv.org/abs/1904.00887)| *available*| 89.16| 32.32| 0.55| |
 |**25**| [(Chan et al., 2020)](https://arxiv.org/abs/1912.10185)| *retrained*| 93.79| 15.5| 0.18| |
 
-## MNIST
+## MNIST - Linf
 The robust accuracy is computed at `eps = 0.3` in the Linf-norm.
 
 |#    |paper           |model     |clean         |report. |AA  |AA+|
 |:---:|---|:---:|---:|---:|---:|---:|
 |**1**| [(Zhang et al., 2020)](https://arxiv.org/abs/1906.06316)| *available*| 98.38| 96.38| 93.95| 93.95|
-|**2**| [(Gowal et al., 2019)](https://arxiv.org/abs/1810.12715)| *available*| 98.34| 96.03| 92.75| 92.75|
+|**2**| [(Gowal et al., 2019)](https://arxiv.org/abs/1810.12715)| *available*| 98.34| 93.88| 92.75| 92.75|
 |**3**| [(Zhang et al., 2019b)](https://arxiv.org/abs/1901.08573)| *available*| 99.48| 95.60| 92.76| 92.74| [92.58](https://github.com/yaodongyu/TRADES)
 |**4**| [(Atzmon et al., 2019)](https://arxiv.org/abs/1905.11911)| *available*| 99.35| 97.35| 90.85| |
 |**5**| [(Madry et al., 2018)](https://arxiv.org/abs/1706.06083)| *available*| 98.53| 89.62| 88.43| 88.43| [88.06](https://github.com/MadryLab/mnist_challenge)
@@ -119,6 +119,14 @@ where:
 + `sess` is a TF session.
 
 The evaluation can be run in the same way as done with PT models.
+
+### Example
+An example of how to use AutoAttack can be found in `examples/eval.py`. To run the standard evaluation on a pretrained
+model on CIFAR-10 use
+```python
+python eval.py [--cheap --individual --plus]
+```
+where the optional flags activate respectively the *cheap* version (see below), the *individual* version (all the attacks are run on the full test set) and the *plus* version (AA+, including also the targeted attacks).
 
 ## Other options
 ### Cheaper version
