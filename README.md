@@ -123,7 +123,7 @@ The evaluation can be run in the same way as done with PT models.
 ### Example
 An example of how to use AutoAttack can be found in `examples/eval.py`. To run the standard evaluation on a pretrained
 model on CIFAR-10 use
-```python
+```
 python eval.py [--cheap --individual --plus]
 ```
 where the optional flags activate respectively the *cheap* version (see below), the *individual* version (all the attacks are run on the full test set) and the *plus* version (AA+, including also the targeted attacks).
