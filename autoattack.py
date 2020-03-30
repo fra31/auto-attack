@@ -16,7 +16,9 @@ class AutoAttack():
         self.epsilon = eps
         self.seed = seed
         self.verbose = verbose
-        self.attacks_to_run = attacks_to_run if not plus else attacks_to_run.extend(['apgd-t', 'fab-t'])
+        if plus:
+            attacks_to_run.extend(['apgd-t', 'fab-t'])
+        self.attacks_to_run = attacks_to_run
         self.plus = plus
         self.is_tf_model = is_tf_model
         self.device = device
