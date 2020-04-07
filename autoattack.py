@@ -5,11 +5,12 @@ from torch.autograd import Variable
 import numpy as np
 import argparse
 import time
+import other_utils as utils
 
 class AutoAttack():
     def __init__(self, model, norm='Linf', eps=.3, seed=None, verbose=True,
                  attacks_to_run=['apgd-ce', 'apgd-dlr', 'fab', 'square'],
-                 plus=False, is_tf_model=False, device='cuda'):
+                 plus=False, is_tf_model=False, device='cuda', log_path=None):
         self.model = model
         self.norm = norm
         assert norm in ['Linf', 'L2']
@@ -22,11 +23,12 @@ class AutoAttack():
         self.plus = plus
         self.is_tf_model = is_tf_model
         self.device = device
+        self.logger = utils.Logger(log_path)
         
         if not self.is_tf_model:
             from autopgd_pt import APGDAttack
             self.apgd = APGDAttack(self.model, n_restarts=5, n_iter=100, verbose=False,
-                eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed)
+                eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed, device=self.device)
             
             from fab_pt import FABAttack
             self.fab = FABAttack(self.model, n_restarts=5, n_iter=100, eps=self.epsilon, seed=self.seed,
@@ -38,12 +40,12 @@ class AutoAttack():
                 
             from autopgd_pt import APGDAttack_targeted
             self.apgd_targeted = APGDAttack_targeted(self.model, n_restarts=1, n_iter=100, verbose=False,
-                eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed)
+                eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed, device=self.device)
     
         else:
             from autopgd_tf import APGDAttack
             self.apgd = APGDAttack(self.model, n_restarts=5, n_iter=100, verbose=False,
-                eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed)
+                eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed, device=self.device)
             
             from fab_tf import FABAttack
             self.fab = FABAttack(self.model, n_restarts=5, n_iter=100, eps=self.epsilon, seed=self.seed,
@@ -55,9 +57,7 @@ class AutoAttack():
                 
             from autopgd_tf import APGDAttack_targeted
             self.apgd_targeted = APGDAttack_targeted(self.model, n_restarts=1, n_iter=100, verbose=False,
-                eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed)
-    
-        ### TODO: add device to autopgd
+                eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed, device=self.device)
     
     def get_logits(self, x):
         if not self.is_tf_model:
@@ -93,7 +93,7 @@ class AutoAttack():
             robust_accuracy = torch.sum(robust_flags).item() / x_orig.shape[0]
                 
             if self.verbose:
-                print('initial accuracy: {:.2%}'.format(robust_accuracy))
+                self.logger.log('initial accuracy: {:.2%}'.format(robust_accuracy))
                     
             x_adv = x_orig.clone().detach()
             startt = time.time()
@@ -172,7 +172,7 @@ class AutoAttack():
                 
                     if self.verbose:
                         num_non_robust_batch = torch.sum(false_batch)    
-                        print('{} - {}/{} - {} out of {} successfully perturbed'.format(
+                        self.logger.log('{} - {}/{} - {} out of {} successfully perturbed'.format(
                             attack, batch_idx + 1, n_batches, num_non_robust_batch, x.shape[0]))
                 
                 robust_accuracy = torch.sum(robust_flags).item() / x_orig.shape[0]
@@ -186,9 +186,9 @@ class AutoAttack():
                     res = (x_adv - x_orig).abs().view(x_orig.shape[0], -1).max(1)[0]
                 elif self.norm == 'L2':
                     res = ((x_adv - x_orig) ** 2).view(x_orig.shape[0], -1).sum(-1).sqrt()
-                print('max {} perturbation: {:.5f}, nan in tensor: {}, max: {:.5f}, min: {:.5f}'.format(
+                self.logger.log('max {} perturbation: {:.5f}, nan in tensor: {}, max: {:.5f}, min: {:.5f}'.format(
                     self.norm, res.max(), (x_adv != x_adv).sum(), x_adv.max(), x_adv.min()))
-                print('robust accuracy: {:.2%}'.format(robust_accuracy))
+                self.logger.log('robust accuracy: {:.2%}'.format(robust_accuracy))
         
         return x_adv
         
@@ -227,7 +227,7 @@ class AutoAttack():
             if verbose_indiv:    
                 acc_indiv  = self.clean_accuracy(adv[c], y_orig, bs=bs)
                 space = '\t \t' if c == 'fab' else '\t'
-                print('robust accuracy by {} {} {:.2%} \t (time attack: {:.1f} s)'.format(
+                self.logger.log('robust accuracy by {} {} {:.2%} \t (time attack: {:.1f} s)'.format(
                     c.upper(), space, acc_indiv,  time.time() - startt))
         
         return adv

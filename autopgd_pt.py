@@ -15,7 +15,8 @@ import torch.nn.functional as F
     
 class APGDAttack():
     def __init__(self, model, n_iter=100, norm='Linf', n_restarts=1, eps=None,
-                 seed=0, loss='ce', eot_iter=1, rho=.75, verbose=False):
+                 seed=0, loss='ce', eot_iter=1, rho=.75, verbose=False,
+                 device='cuda'):
         self.model = model
         self.n_iter = n_iter
         self.eps = eps
@@ -26,6 +27,7 @@ class APGDAttack():
         self.eot_iter = eot_iter
         self.thr_decr = rho
         self.verbose = verbose
+        self.device = device
     
     def check_oscillation(self, x, j, k, y5, k3=0.75):
         t = np.zeros(x.shape[1])
@@ -52,11 +54,11 @@ class APGDAttack():
             print('parameters: ', self.n_iter, self.n_iter_2, self.n_iter_min, self.size_decr)
         
         if self.norm == 'Linf':
-            t = 2 * torch.rand(x.shape).cuda().detach() - 1
-            x_adv = x.detach() + self.eps * torch.ones([x.shape[0], 1, 1, 1]).cuda().detach() * t / (t.reshape([t.shape[0], -1]).abs().max(dim=1, keepdim=True)[0].reshape([-1, 1, 1, 1]))
+            t = 2 * torch.rand(x.shape).to(self.device).detach() - 1
+            x_adv = x.detach() + self.eps * torch.ones([x.shape[0], 1, 1, 1]).to(self.device).detach() * t / (t.reshape([t.shape[0], -1]).abs().max(dim=1, keepdim=True)[0].reshape([-1, 1, 1, 1]))
         elif self.norm == 'L2':
-            t = torch.randn(x.shape).cuda().detach()
-            x_adv = x.detach() + self.eps * torch.ones([x.shape[0], 1, 1, 1]).cuda().detach() * t / ((t ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt() + 1e12)
+            t = torch.randn(x.shape).to(self.device).detach()
+            x_adv = x.detach() + self.eps * torch.ones([x.shape[0], 1, 1, 1]).to(self.device).detach() * t / ((t ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt() + 1e-12)
         x_adv = x_adv.clamp(0., 1.)
         x_best = x_adv.clone()
         x_best_adv = x_adv.clone()
@@ -88,7 +90,7 @@ class APGDAttack():
         acc_steps[0] = acc + 0
         loss_best = loss_indiv.detach().clone()
         
-        step_size = self.eps * torch.ones([x.shape[0], 1, 1, 1]).cuda().detach() * torch.Tensor([2.0]).cuda().detach().reshape([1, 1, 1, 1])
+        step_size = self.eps * torch.ones([x.shape[0], 1, 1, 1]).to(self.device).detach() * torch.Tensor([2.0]).to(self.device).detach().reshape([1, 1, 1, 1])
         x_adv_old = x_adv.clone()
         counter = 0
         k = self.n_iter_2 + 0
@@ -116,10 +118,10 @@ class APGDAttack():
                 elif self.norm == 'L2':
                     x_adv_1 = x_adv + step_size * grad / ((grad ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt() + 1e-12)
                     x_adv_1 = torch.clamp(x + (x_adv_1 - x) / (((x_adv_1 - x) ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt() + 1e-12) * torch.min(
-                        self.eps * torch.ones(x.shape).cuda().detach(), ((x_adv_1 - x) ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt()), 0.0, 1.0)
+                        self.eps * torch.ones(x.shape).to(self.device).detach(), ((x_adv_1 - x) ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt()), 0.0, 1.0)
                     x_adv_1 = x_adv + (x_adv_1 - x_adv) * a + grad2 * (1 - a)
                     x_adv_1 = torch.clamp(x + (x_adv_1 - x) / (((x_adv_1 - x) ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt() + 1e-12) * torch.min(
-                        self.eps * torch.ones(x.shape).cuda().detach(), ((x_adv_1 - x) ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt() + 1e-12), 0.0, 1.0)
+                        self.eps * torch.ones(x.shape).to(self.device).detach(), ((x_adv_1 - x) ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt() + 1e-12), 0.0, 1.0)
                     
                 x_adv = x_adv_1 + 0.
             
@@ -216,7 +218,7 @@ class APGDAttack():
         
         else:
             adv_best = x.detach().clone()
-            loss_best = torch.ones([x.shape[0]]).cuda() * (-float('inf'))
+            loss_best = torch.ones([x.shape[0]]).to(self.device) * (-float('inf'))
             for counter in range(self.n_restarts):
                 best_curr, _, loss_curr, _ = self.attack_single_run(x, y)
                 ind_curr = (loss_curr > loss_best).nonzero().squeeze()
@@ -230,7 +232,7 @@ class APGDAttack():
 
 class APGDAttack_targeted():
     def __init__(self, model, n_iter=100, norm='Linf', n_restarts=1, eps=None,
-                 seed=0, eot_iter=1, rho=.75, verbose=False):
+                 seed=0, eot_iter=1, rho=.75, verbose=False, device='cuda'):
         self.model = model
         self.n_iter = n_iter
         self.eps = eps
@@ -241,6 +243,7 @@ class APGDAttack_targeted():
         self.thr_decr = rho
         self.verbose = verbose
         self.target_class = None
+        self.device = device
     
     def check_oscillation(self, x, j, k, y5, k3=0.5):
         t = np.zeros(x.shape[1])
@@ -266,11 +269,11 @@ class APGDAttack_targeted():
             print('parameters: ', self.n_iter, self.n_iter_2, self.n_iter_min, self.size_decr)
         
         if self.norm == 'Linf':
-            t = 2 * torch.rand(x.shape).cuda().detach() - 1
-            x_adv = x.detach() + self.eps * torch.ones([x.shape[0], 1, 1, 1]).cuda().detach() * t / (t.reshape([t.shape[0], -1]).abs().max(dim=1, keepdim=True)[0].reshape([-1, 1, 1, 1]))
+            t = 2 * torch.rand(x.shape).to(self.device).detach() - 1
+            x_adv = x.detach() + self.eps * torch.ones([x.shape[0], 1, 1, 1]).to(self.device).detach() * t / (t.reshape([t.shape[0], -1]).abs().max(dim=1, keepdim=True)[0].reshape([-1, 1, 1, 1]))
         elif self.norm == 'L2':
-            t = torch.randn(x.shape).cuda().detach()
-            x_adv = x.detach() + self.eps * torch.ones([x.shape[0], 1, 1, 1]).cuda().detach() * t / ((t ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt() + 1e12)
+            t = torch.randn(x.shape).to(self.device).detach()
+            x_adv = x.detach() + self.eps * torch.ones([x.shape[0], 1, 1, 1]).to(self.device).detach() * t / ((t ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt() + 1e-12)
         x_adv = x_adv.clamp(0., 1.)
         x_best = x_adv.clone()
         x_best_adv = x_adv.clone()
@@ -298,7 +301,7 @@ class APGDAttack_targeted():
         acc_steps[0] = acc + 0
         loss_best = loss_indiv.detach().clone()
         
-        step_size = self.eps * torch.ones([x.shape[0], 1, 1, 1]).cuda().detach() * torch.Tensor([2.0]).cuda().detach().reshape([1, 1, 1, 1])
+        step_size = self.eps * torch.ones([x.shape[0], 1, 1, 1]).to(self.device).detach() * torch.Tensor([2.0]).to(self.device).detach().reshape([1, 1, 1, 1])
         x_adv_old = x_adv.clone()
         counter = 0
         k = self.n_iter_2 + 0
@@ -326,10 +329,10 @@ class APGDAttack_targeted():
                 elif self.norm == 'L2':
                     x_adv_1 = x_adv + step_size[0] * grad / ((grad ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt() + 1e-12)
                     x_adv_1 = torch.clamp(x + (x_adv_1 - x) / (((x_adv_1 - x) ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt() + 1e-12) * torch.min(
-                        self.eps * torch.ones(x.shape).cuda().detach(), ((x_adv_1 - x) ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt()), 0.0, 1.0)
+                        self.eps * torch.ones(x.shape).to(self.device).detach(), ((x_adv_1 - x) ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt()), 0.0, 1.0)
                     x_adv_1 = x_adv + (x_adv_1 - x_adv)*a + grad2*(1 - a)
                     x_adv_1 = torch.clamp(x + (x_adv_1 - x) / (((x_adv_1 - x) ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt() + 1e-12) * torch.min(
-                        self.eps * torch.ones(x.shape).cuda().detach(), ((x_adv_1 - x) ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt() + 1e-12), 0.0, 1.0)
+                        self.eps * torch.ones(x.shape).to(self.device).detach(), ((x_adv_1 - x) ** 2).sum(dim=(1, 2, 3), keepdim=True).sqrt() + 1e-12), 0.0, 1.0)
                     
                 x_adv = x_adv_1 + 0.
             
