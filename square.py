@@ -260,7 +260,7 @@ class SquareAttack():
                     acc = (margin_min > 0.0).sum().float() / n_ex_total
                     acc_corr = (margin_min > 0.0).float().mean()
                     ind_succ = (margin_min <= 0.).nonzero().squeeze()
-                    if acc_corr < 1. and self.verbose:
+                    if self.verbose and ind_succ.numel() != 0:
                         print('{}: acc={:.2%} acc_corr={:.2%} avg#q_ae={:.1f} med#q_ae={:.1f} loss={:.3f} max_pert={:.1f}'.
                             format(i_iter + 1, acc.item(), acc_corr.item(), n_queries[ind_succ].mean().item(), n_queries[ind_succ].median().item(), margin_min.mean(), norms_image.max().item()))
                     
