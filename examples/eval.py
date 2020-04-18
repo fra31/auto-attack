@@ -23,6 +23,7 @@ if __name__ == '__main__':
     parser.add_argument('--save_dir', type=str, default='./results')
     parser.add_argument('--batch_size', type=int, default=500)
     parser.add_argument('--plus', action='store_true')
+    parser.add_argument('--log_path', type=str, default='./log_file.txt')
     
     args = parser.parse_args()
 
@@ -45,7 +46,7 @@ if __name__ == '__main__':
     
     # load attack    
     from autoattack import AutoAttack
-    adversary = AutoAttack(model, norm=args.norm, eps=args.epsilon)
+    adversary = AutoAttack(model, norm=args.norm, eps=args.epsilon, log_path=args.log_path)
     
     l = [x for (x, y) in test_loader]
     x_test = torch.cat(l, 0)
