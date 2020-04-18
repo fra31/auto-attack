@@ -9,25 +9,19 @@ assignees: ''
 
 **Paper**: {title and link}
 
-**Authors**: {}
-
 **Venue**: {if applicable, the venue where the paper appeared}
 
 **Dataset and threat model**: {dataset, norm and epsilon for robust accuracy}
 
-**Code**: {link to the code e.g. GitHub page}
-
-**Evaluation code**: {link to a script to load and evaluate the model}
+**Code**: {link to the code e.g. GitHub page, possibly including a script to run the evaluation}
 
 **Pre-trained model**: {link to model weights available for downloading}
 
-**Log file**: {log file of the evaluation}
+**Log file**: {link to log file of the evaluation}
 
 **Additional data**: {yes/no, whether extra data, other than the standard training set, is used}
 
-**Clean accuracy**: {on the full test set}
-
-**Robust accuracy**: {on the full test set}
+**Clean and robust accuracy**: {on the full test set}
 
 **Architecture**: {}
 
