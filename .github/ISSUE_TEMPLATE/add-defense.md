@@ -7,11 +7,13 @@ assignees: ''
 
 ---
 
-**Paper**: {title and link to pdf}
+**Paper**: {title and link}
 
 **Authors**: {}
 
 **Venue**: {if applicable, the venue where the paper appeared}
+
+**Dataset and threat model**: {dataset, norm and epsilon for robust accuracy}
 
 **Code**: {link to the code e.g. GitHub page}
 
@@ -19,7 +21,7 @@ assignees: ''
 
 **Pre-trained model**: {link to model weights available for downloading}
 
-**Dataset and threat model**: {dataset, norm and epsilon for robust accuracy}
+**Log file**: {log file of the evaluation}
 
 **Additional data**: {yes/no, whether extra data, other than the standard training set, is used}
 
