@@ -36,7 +36,7 @@ class AutoAttack():
         
             from square import SquareAttack
             self.square = SquareAttack(self.model, p_init=.8, n_queries=5000, eps=self.epsilon, norm=self.norm,
-                early_stop=True, n_restarts=1, seed=self.seed, verbose=False, device=self.device)
+                n_restarts=1, seed=self.seed, verbose=False, device=self.device, resc_schedule=False)
                 
             from autopgd_pt import APGDAttack_targeted
             self.apgd_targeted = APGDAttack_targeted(self.model, n_restarts=1, n_iter=100, verbose=False,
@@ -53,7 +53,7 @@ class AutoAttack():
         
             from square import SquareAttack
             self.square = SquareAttack(self.model.predict, p_init=.8, n_queries=5000, eps=self.epsilon, norm=self.norm,
-                early_stop=True, n_restarts=1, seed=self.seed, verbose=False, device=self.device)
+                n_restarts=1, seed=self.seed, verbose=False, device=self.device, resc_schedule=False)
                 
             from autopgd_tf import APGDAttack_targeted
             self.apgd_targeted = APGDAttack_targeted(self.model, n_restarts=1, n_iter=100, verbose=False,
@@ -146,7 +146,7 @@ class AutoAttack():
                     elif attack == 'square':
                         # square
                         self.square.seed = self.get_seed()
-                        _, adv_curr = self.square.perturb(x, y)
+                        adv_curr = self.square.perturb(x, y)
                     
                     elif attack == 'apgd-t':
                         # targeted apgd
@@ -237,5 +237,6 @@ class AutoAttack():
         self.fab.n_restarts = 1
         self.apgd_targeted.n_restarts = 1
         self.square.n_queries = 1000
+        self.square.resc_schedule = True
         self.plus = False
 
