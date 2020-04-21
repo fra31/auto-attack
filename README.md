@@ -23,7 +23,7 @@ We report the source of the model, i.e. if it is publicly *available*, if we rec
 
 We plan to add new models as they appear and are made available. Feel free to suggest new defenses to test!
 
-**To have a model added**: please open a PR possibly including a script to load and evaluate the classifier and a link to download the weights.
+**To have a model added**: please check [here](https://github.com/fra31/auto-attack/issues/new/choose).
 
 ## CIFAR-10 - Linf
 The robust accuracy is evaluated at `eps = 8/255`, except for those marked with * for which `eps = 0.031`, where `eps` is the maximal Linf-norm allowed for the adversarial perturbations. The `eps` used is the same set in the original papers.\
@@ -143,6 +143,9 @@ before running the evaluation, a 5 times cheaper version is used, i.e. no random
 
 ### Random seed
 It is possible to fix the random seed used for the attacks with, e.g., `adversary.seed = 0`. In this case the same seed is used for all the attacks used, otherwise a different random seed is picked for each attack.
+
+### Log results
+To log the intermediate results of the evaluation specify `log_path=/path/to/logfile.txt` when initializing the attack.
 
 ## Citation
 ```
