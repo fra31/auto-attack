@@ -226,21 +226,26 @@ class SquareAttack():
                     x_new = self.check_shape(x_new)
                     
                     margin, loss = self.margin_and_loss(x_new, y_curr)
-                    
+
+                    # update loss if new loss is better
                     idx_improved = (loss < loss_min_curr).float()
-                    margin_min[idx_to_fool] = idx_improved * margin + (
-                        1. - idx_improved) * margin_min_curr
+
                     loss_min[idx_to_fool] = idx_improved * loss + (
                         1. - idx_improved) * loss_min_curr
-                    
+
+                    # update margin and x_best if new loss is better
+                    # or misclassification
                     idx_miscl = (margin <= 0.).float()
                     idx_improved = torch.max(idx_improved, idx_miscl)
+
+                    margin_min[idx_to_fool] = idx_improved * margin + (
+                        1. - idx_improved) * margin_min_curr
                     idx_improved = idx_improved.reshape([-1,
                         *[1]*len(x.shape[:-1])])
                     x_best[idx_to_fool] = idx_improved * x_new + (
                         1. - idx_improved) * x_best_curr
                     n_queries[idx_to_fool] += 1.
-            
+
                     ind_succ = (margin_min <= 0.).nonzero().squeeze()
                     if self.verbose and ind_succ.numel() != 0:
                         print('{}'.format(i_iter + 1),
@@ -252,7 +257,7 @@ class SquareAttack():
                             '- med # queries={:.1f}'.format(
                             n_queries[ind_succ].median().item()),
                             '- loss={:.3f}'.format(loss_min.mean()))
-                    
+
                     if ind_succ.numel() == n_ex_total:
                         break
               
@@ -331,15 +336,19 @@ class SquareAttack():
 
                     margin, loss = self.margin_and_loss(x_new, y_curr)
 
+                    # update loss if new loss is better
                     idx_improved = (loss < loss_min_curr).float()
-                    margin_min[idx_to_fool] = idx_improved * margin + (
-                        1. - idx_improved) * margin_min_curr
+
                     loss_min[idx_to_fool] = idx_improved * loss + (
                         1. - idx_improved) * loss_min_curr
 
+                    # update margin and x_best if new loss is better
+                    # or misclassification
                     idx_miscl = (margin <= 0.).float()
                     idx_improved = torch.max(idx_improved, idx_miscl)
 
+                    margin_min[idx_to_fool] = idx_improved * margin + (
+                        1. - idx_improved) * margin_min_curr
                     idx_improved = idx_improved.reshape([-1,
                         *[1]*len(x.shape[:-1])])
                     x_best[idx_to_fool] = idx_improved * x_new + (

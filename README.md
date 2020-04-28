@@ -32,7 +32,7 @@ The robust accuracy is evaluated at `eps = 8/255`, except for those marked with 
 |#    |paper           |model     |clean         |report. |AA  |AA+|
 |:---:|---|:---:|---:|---:|---:|---:|
 |**1**| [(Carmon et al., 2019)](https://arxiv.org/abs/1905.13736)‡| *available*| 89.69| 62.5| 59.65| 59.50|
-|**2**| [(Wang et al., 2020)](https://openreview.net/forum?id=rklOg6EFwS)‡| *authors*| 87.50| 65.04| 56.69| 56.26|
+|**2**| [(Wang et al., 2020)](https://openreview.net/forum?id=rklOg6EFwS)‡| *available*| 87.50| 65.04| 56.69| 56.26|
 |**3**| [(Alayrac et al., 2019)](https://arxiv.org/abs/1905.13725)‡| *available*| 86.46| 56.30| 56.92| 56.01|
 |**4**| [(Hendrycks et al., 2019)](https://arxiv.org/abs/1901.09960)‡| *available*| 87.11| 57.4| 54.99| 54.86|
 |**5**| [(Rice et al., 2020)](https://arxiv.org/abs/2002.11569)| *available*| 85.34| 58| 53.60| 53.35|
