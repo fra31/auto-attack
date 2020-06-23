@@ -29,7 +29,12 @@ class ModelAdapter():
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x_input)
             logits = self._get_logits(x_input)
+
         jacobian = g.batch_jacobian(logits, x_input)
+
+        if self.data_format == 'channels_last':
+            jacobian = tf.transpose(jacobian, perm=[0,1,4,2,3])
+
         return jacobian
 
     def _get_xent(self, logits, y_input):
