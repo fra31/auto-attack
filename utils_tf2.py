@@ -15,11 +15,24 @@ class ModelAdapter():
         
         for L in self.tf_model.layers:
             if isinstance(L, tf.keras.layers.Conv2D):
+                print("[INFO] set data_format = '{:s}'".format(L.data_format))
                 self.data_format = L.data_format
                 return
 
-        print("[INFO] set data_format = 'channels_first'")
-        self.data_format = 'channels_first'
+        print("[INFO] Can not find Conv2D layer")
+        input_shape = self.tf_model.input_shape
+
+        if input_shape[3] == 3:
+            print("[INFO] Because detecting input_shape[3] == 3, set data_format = 'channels_last'")
+            self.data_format = 'channels_last'
+
+        elif input_shape[3] == 1:
+            print("[INFO] Because detecting input_shape[3] == 1, set data_format = 'channels_last'")
+            self.data_format = 'channels_last'
+
+        else:
+            print("[INFO] set data_format = 'channels_first'")
+            self.data_format = 'channels_first'
 
     def _get_logits(self, x_input):
         logits = self.tf_model(x_input, training=False)
