@@ -108,7 +108,7 @@ which returns a dictionary with the adversarial examples found by each attack.
 To specify a subset of attacks add e.g. `adversary.attacks_to_run = ['apgd-ce']`.
 
 ### TensorFlow models
-To evaluate models implemented in TensorFlow, use
+To evaluate models implemented in TensorFlow 1.X, use
 
 ```python
 import utils_tf
@@ -123,6 +123,19 @@ where:
 + `x_input` is a placeholder for the input for the classifier (NHWC format expected),
 + `y_input` is a placeholder for the correct labels,
 + `sess` is a TF session.
+
+If TensorFlow's version is 2.X, use
+
+```python
+import utils_tf2
+model_adapted = utils_tf2.ModelAdapter(tf_model)
+
+from autoattack import AutoAttack
+adversary = AutoAttack(model_adapted, norm='Linf', eps=epsilon, plus=False, is_tf_model=True)
+```
+
+where:
++ `tf_model` is tf.keras model without activation function 'softmax'
 
 The evaluation can be run in the same way as done with PT models.
 
