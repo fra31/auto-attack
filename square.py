@@ -321,8 +321,8 @@ class SquareAttack():
                     old_deltas = delta_curr[:, :, vh:vh + s, vw:vw + s] / (
                         1e-12 + norms_window_1)
                     new_deltas += old_deltas
-                    new_deltas = new_deltas / (new_deltas ** 2).sum(
-                        dim=(-2, -1), keepdim=True).sqrt() * (torch.max(
+                    new_deltas = new_deltas / (1e-12 + (new_deltas ** 2).sum(
+                        dim=(-2, -1), keepdim=True).sqrt()) * (torch.max(
                         (self.eps * torch.ones_like(new_deltas)) ** 2 -
                         norms_image ** 2, torch.zeros_like(new_deltas)) /
                         c + norms_windows ** 2).sqrt()
@@ -367,6 +367,9 @@ class SquareAttack():
                             n_queries[ind_succ].median().item()),
                             '- loss={:.3f}'.format(loss_min.mean()))
 
+                    assert (x_new != x_new).sum() == 0
+                    assert (x_best != x_best).sum() == 0
+                    
                     if ind_succ.numel() == n_ex_total:
                         break
 
