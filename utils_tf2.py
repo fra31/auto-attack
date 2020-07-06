@@ -34,14 +34,14 @@ class ModelAdapter():
             print("[INFO] set data_format = 'channels_first'")
             self.data_format = 'channels_first'
 
-    def _get_logits(self, x_input):
+    def __get_logits(self, x_input):
         logits = self.tf_model(x_input, training=False)
         return logits
 
-    def _get_jacobian(self, x_input):
+    def __get_jacobian(self, x_input):
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x_input)
-            logits = self._get_logits(x_input)
+            logits = self.__get_logits(x_input)
 
         jacobian = g.batch_jacobian(logits, x_input)
 
@@ -50,43 +50,43 @@ class ModelAdapter():
 
         return jacobian
 
-    def _get_xent(self, logits, y_input):
+    def __get_xent(self, logits, y_input):
         xent   = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=y_input)
         return xent
 
     def _get_grad_xent(self, x_input, y_input):
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x_input)
-            logits = self._get_logits(x_input)
-            xent = self._get_xent(logits, y_input)
+            logits = self.__get_logits(x_input)
+            xent = self.__get_xent(logits, y_input)
         
         grad_xent = g.gradient(xent, x_input)
 
         return logits, xent, grad_xent
 
-    def _get_dir(self, logits, y_input):
+    def __get_dir(self, logits, y_input):
         val_dlr = dlr_loss(logits, y_input, num_classes=self.num_classes)
         return val_dlr
 
-    def _get_grad_dir(self, x_input, y_input):
+    def __get_grad_dir(self, x_input, y_input):
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x_input)
-            logits = self._get_logits(x_input)
-            val_dir = self._get_dir(logits, y_input)
+            logits = self.__get_logits(x_input)
+            val_dir = self.__get_dir(logits, y_input)
 
         grad_dir = g.gradient(val_dir, x_input)
         
         return logits, val_dir, grad_dir
 
-    def _get_dir_target(self, logits, y_input, y_target):
+    def __get_dir_target(self, logits, y_input, y_target):
         dlr_target = dlr_loss_targeted(logits, y_input, y_target, num_classes=self.num_classes)
         return dlr_target
 
-    def _get_grad_dir_target(self, x_input, y_input, y_target):
+    def __get_grad_dir_target(self, x_input, y_input, y_target):
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x_input)
-            logits = self._get_logits(x_input)
-            dlr_target = self._get_dir_target(logits, y_input, y_target)
+            logits = self.__get_logits(x_input)
+            dlr_target = self.__get_dir_target(logits, y_input, y_target)
 
         grad_target = g.gradients(dlr_target, x_input)[0]
 
@@ -98,7 +98,7 @@ class ModelAdapter():
         if self.data_format == 'channels_last':
             x2 = tf.transpose(x2, perm=[0,2,3,1])
 
-        y = self._get_logits(x2).numpy()
+        y = self.__get_logits(x2).numpy()
         
         return torch.from_numpy(y).cuda()
 
@@ -106,7 +106,7 @@ class ModelAdapter():
         x2 = tf.convert_to_tensor(x.cpu().numpy(), dtype=tf.float32)
         if self.data_format == 'channels_last':
             x2 = tf.transpose(x2, perm=[0,2,3,1])
-        g2 = self._get_jacobian(x2)
+        g2 = self.__get_jacobian(x2)
         
         return torch.from_numpy(g2.numpy()).cuda()
 
@@ -131,7 +131,7 @@ class ModelAdapter():
         if self.data_format == 'channels_last':
             x2 = tf.transpose(x2, perm=[0,2,3,1])
 
-        logits_val, loss_indiv_val, grad_val = self._get_grad_dir(x2, y2)
+        logits_val, loss_indiv_val, grad_val = self.__get_grad_dir(x2, y2)
 
         if self.data_format == 'channels_last':
             grad_val = tf.transpose(grad_val, perm=[0,3,1,2])
@@ -146,7 +146,7 @@ class ModelAdapter():
         if self.data_format == 'channels_last':
             x2 = tf.transpose(x2, perm=[0,2,3,1])
 
-        logits_val, loss_indiv_val, grad_val = self._get_grad_dir_target(x2, y2, y_targ)
+        logits_val, loss_indiv_val, grad_val = self.__get_grad_dir_target(x2, y2, y_targ)
 
         if self.data_format == 'channels_last':
             grad_val = tf.transpose(grad_val, perm=[0,3,1,2])
