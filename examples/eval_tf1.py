@@ -10,6 +10,9 @@ import torchvision.datasets as datasets
 import torch.utils.data as data
 import torchvision.transforms as transforms
 
+import sys
+sys.path.insert(0,'..')
+
 from autoattack import AutoAttack
 import utils_tf
 
