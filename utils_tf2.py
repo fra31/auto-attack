@@ -88,7 +88,7 @@ class ModelAdapter():
             logits = self.__get_logits(x_input)
             dlr_target = self.__get_dir_target(logits, y_input, y_target)
 
-        grad_target = g.gradients(dlr_target, x_input)[0]
+        grad_target = g.gradient(dlr_target, x_input)[0]
 
         return logits, dlr_target, grad_target
     
