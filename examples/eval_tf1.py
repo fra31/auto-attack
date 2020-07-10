@@ -111,7 +111,7 @@ if __name__ == '__main__':
     args = arg_parser(parser)
 
     # MODEL PATH
-    MODEL_PATH= args.path
+    MODEL_PATH = args.path
 
     # init tf/keras
     tf.compat.v1.keras.backend.clear_session()

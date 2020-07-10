@@ -2,6 +2,7 @@
 
 "Reliable evaluation of adversarial robustness with an ensemble of diverse parameter-free attacks"\
 *Francesco Croce*, *Matthias Hein*\
+Accepted at ICML 2020\
 [https://arxiv.org/abs/2003.01690](https://arxiv.org/abs/2003.01690)
 
 We propose to use an ensemble of four diverse attacks to reliably evaluate robustness:
@@ -165,10 +166,10 @@ To log the intermediate results of the evaluation specify `log_path=/path/to/log
 
 ## Citation
 ```
-@unpublished{croce2020reliable,
+@inproceedings{croce2020reliable,
     title = {Reliable evaluation of adversarial robustness with an ensemble of diverse parameter-free attacks},
     authors = {Francesco Croce and Matthias Hein},
-    note = {preprint arXiv:2003.01690},
+    booktitle = {ICML},
     year = {2020}
 }
 ```

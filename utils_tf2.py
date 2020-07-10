@@ -64,31 +64,31 @@ class ModelAdapter():
 
         return logits, xent, grad_xent
 
-    def __get_dir(self, logits, y_input):
+    def __get_dlr(self, logits, y_input):
         val_dlr = dlr_loss(logits, y_input, num_classes=self.num_classes)
         return val_dlr
 
-    def __get_grad_dir(self, x_input, y_input):
+    def __get_grad_dlr(self, x_input, y_input):
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x_input)
             logits = self.__get_logits(x_input)
-            val_dir = self.__get_dir(logits, y_input)
+            val_dlr = self.__get_dlr(logits, y_input)
 
-        grad_dir = g.gradient(val_dir, x_input)
+        grad_dlr = g.gradient(val_dlr, x_input)
         
-        return logits, val_dir, grad_dir
+        return logits, val_dlr, grad_dlr
 
-    def __get_dir_target(self, logits, y_input, y_target):
+    def __get_dlr_target(self, logits, y_input, y_target):
         dlr_target = dlr_loss_targeted(logits, y_input, y_target, num_classes=self.num_classes)
         return dlr_target
 
-    def __get_grad_dir_target(self, x_input, y_input, y_target):
+    def __get_grad_dlr_target(self, x_input, y_input, y_target):
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x_input)
             logits = self.__get_logits(x_input)
-            dlr_target = self.__get_dir_target(logits, y_input, y_target)
+            dlr_target = self.__get_dlr_target(logits, y_input, y_target)
 
-        grad_target = g.gradient(dlr_target, x_input)[0]
+        grad_target = g.gradient(dlr_target, x_input)
 
         return logits, dlr_target, grad_target
     
@@ -131,7 +131,7 @@ class ModelAdapter():
         if self.data_format == 'channels_last':
             x2 = tf.transpose(x2, perm=[0,2,3,1])
 
-        logits_val, loss_indiv_val, grad_val = self.__get_grad_dir(x2, y2)
+        logits_val, loss_indiv_val, grad_val = self.__get_grad_dlr(x2, y2)
 
         if self.data_format == 'channels_last':
             grad_val = tf.transpose(grad_val, perm=[0,3,1,2])
@@ -146,7 +146,7 @@ class ModelAdapter():
         if self.data_format == 'channels_last':
             x2 = tf.transpose(x2, perm=[0,2,3,1])
 
-        logits_val, loss_indiv_val, grad_val = self.__get_grad_dir_target(x2, y2, y_targ)
+        logits_val, loss_indiv_val, grad_val = self.__get_grad_dlr_target(x2, y2, y_targ)
 
         if self.data_format == 'channels_last':
             grad_val = tf.transpose(grad_val, perm=[0,3,1,2])

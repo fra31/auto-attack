@@ -111,7 +111,7 @@ if __name__ == '__main__':
     args = arg_parser(parser)
 
     # MODEL PATH
-    MODEL_PATH= args.path
+    MODEL_PATH = args.path
 
     # init tf/keras
     gpus = tf.config.list_physical_devices('GPU')
