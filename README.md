@@ -15,6 +15,10 @@ We propose to use an ensemble of four diverse attacks to reliably evaluate robus
 
 **Budget**: we use 100 iterations and 5 random restarts for the two versions of APGD and FAB and set a query limit of 5000 for Square Attack. For a faster evaluation, see below.
 
+## News
++ [Jul 2020] A short version of the paper is accepted at [ICML'20 UDL workshop](https://sites.google.com/view/udlworkshop2020/) for a spotlight presentation!
++ [Jun 2020] The paper is accepted at ICML 2020!
+
 # Adversarial Defenses Evaluation
 We here list adversarial defenses, in the Linf-threat model, recently proposed and evaluated with
 + AutoAttack (**AA**), as described above,
