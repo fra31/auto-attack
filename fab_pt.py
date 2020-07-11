@@ -99,38 +99,21 @@ class FABAttack():
         return df, dg
 
     def get_diff_logits_grads_batch_targeted(self, imgs, la, la_target):
-        ### TODO: use only a single backward pass
+        u = torch.arange(imgs.shape[0])
         im = imgs.clone().requires_grad_()
         with torch.enable_grad():
             y = self.predict(im)
+            diffy = -(y[u, la] - y[u, la_target])
+            sumdiffy = diffy.sum()
 
-        g2 = torch.zeros([2, *imgs.size()]).to(self.device)
-        grad_mask = torch.zeros_like(y)
-        
-        # gradient original class
         zero_gradients(im)
-        grad_mask[torch.arange(imgs.shape[0]), la] = 1.0
-        y.backward(grad_mask, retain_graph=True)
-        grad_mask[torch.arange(imgs.shape[0]), la] = 0.0
-        g2[0] = im.grad.data
-
-        # gradient target class
-        zero_gradients(im)
-        grad_mask[torch.arange(imgs.shape[0]), la_target] = 1.0
-        y.backward(grad_mask, retain_graph=True)
-        grad_mask[torch.arange(imgs.shape[0]), la_target] = 0.0
-        g2[1] = im.grad.data
+        sumdiffy.backward()
+        graddiffy = im.grad.data
+        df = diffy.detach().unsqueeze(1)
+        dg = graddiffy.unsqueeze(1)
         
-        g2 = torch.transpose(g2, 0, 1).detach()
-        
-        y2 = y.detach()
-        y2 = torch.stack([y2[torch.arange(imgs.shape[0]), la], y2[torch.arange(imgs.shape[0]), la_target]], dim=1)
-        df = y2 - y2[:, 0].unsqueeze(1)
-        dg = g2 - g2[:, 0].unsqueeze(1)
-        df[:, 0] = 1e10
-
         return df, dg
-    
+        
     def projection_linf(self, points_to_project, w_hyperplane, b_hyperplane):
         t = points_to_project.clone()
         w = w_hyperplane.clone()

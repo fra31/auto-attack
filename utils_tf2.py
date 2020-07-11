@@ -110,6 +110,30 @@ class ModelAdapter():
         
         return torch.from_numpy(g2.numpy()).cuda()
 
+    def set_target_class(self, y, y_target):
+        pass
+    
+    def get_grad_diff_logits_target(self, x, y, y_target):
+        x2 = tf.convert_to_tensor(x.cpu().numpy(), dtype=tf.float32)
+        if self.data_format == 'channels_last':
+            x2 = tf.transpose(x2, perm=[0,2,3,1])
+        la = y.cpu().numpy()
+        la_target = y_target.cpu().numpy()
+        
+        with tf.GradientTape(watch_accessed_variables=False) as g:
+            g.watch(x2)
+            logits = self.__get_logits(x2)
+            l = [None] * x2.shape[0]
+            for c in range(x2.shape[0]):
+                l[c] = logits[c, la_target[c]] - logits[c, la[c]]
+            difflogits = tf.stack(l)
+            
+        g2 = g.gradient(difflogits, x2)
+        if self.data_format == 'channels_last':
+            g2 = tf.transpose(g2, perm=[0, 3, 1, 2])
+        
+        return torch.from_numpy(difflogits.numpy()).cuda(), torch.from_numpy(g2.numpy()).cuda()
+    
     def get_logits_loss_grad_xent(self, x, y):
 
         x2 = tf.convert_to_tensor(x.cpu().numpy(), dtype=tf.float32)

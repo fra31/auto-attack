@@ -14,6 +14,8 @@ import torch
 from torch.autograd.gradcheck import zero_gradients
 import time
 
+import tensorflow as tf
+
 #from advertorch.utils import replicate_input
 
 #from .base import Attack
@@ -51,7 +53,8 @@ class FABAttack():
             verbose=False,
             seed=0,
             targeted=False,
-            device=None):
+            device=None,
+            n_target_classes=9):
         """ FAB-attack implementation in pytorch """
 
         self.model = model
@@ -67,6 +70,7 @@ class FABAttack():
         self.seed = seed
         self.target_class = None
         self.device = device
+        self.n_target_classes = n_target_classes
     
     def _get_predicted_label(self, x):
         with torch.no_grad():
@@ -88,17 +92,10 @@ class FABAttack():
         return df, dg
 
     def get_diff_logits_grads_batch_targeted(self, imgs, la, la_target):
-        ### TODO: get both gradients and values with a single pass
-        ### TODO: compute only for correct and target class
-        g2 = self.model.grad_logits(imgs)
-        y2 = self.model.predict(imgs)
-        y2 = torch.stack([y2[torch.arange(imgs.shape[0]), la], y2[torch.arange(imgs.shape[0]), la_target]], dim=1)
-        g2 = torch.stack([g2[torch.arange(imgs.shape[0]), la], g2[torch.arange(imgs.shape[0]), la_target]], dim=1)
-        df = y2 - y2[:, 0].unsqueeze(1)
-        dg = g2 - g2[:, 0].unsqueeze(1)
-        df[:, 0] = 1e10
+        df, dg = self.model.get_grad_diff_logits_target(imgs, la, la_target)
         
         return df, dg
+        
     
     def projection_linf(self, points_to_project, w_hyperplane, b_hyperplane):
         t = points_to_project.clone()
@@ -394,7 +391,7 @@ class FABAttack():
                     if self.norm == 'Linf':
                         dist1 = df.abs() / (1e-12 +
                                             dg.abs()
-                                            .view(dg.shape[0], dg.shape[1], -1)
+                                            .reshape(dg.shape[0], dg.shape[1], -1) # view(...)
                                             .sum(dim=-1))
                     elif self.norm == 'L2':
                         dist1 = df.abs() / (1e-12 + (dg ** 2)
@@ -407,7 +404,7 @@ class FABAttack():
                         raise ValueError('norm not supported')
                     ind = dist1.min(dim=1)[1]
                     dg2 = dg[u1, ind]
-                    b = (- df[u1, ind] + (dg2 * x1).view(x1.shape[0], -1)
+                    b = (- df[u1, ind] + (dg2 * x1).reshape(x1.shape[0], -1) # view(...)
                                          .sum(dim=-1))
                     w = dg2.reshape([bs, -1])
 
@@ -518,11 +515,18 @@ class FABAttack():
         output = self.model.predict(x)
         la_target = output.sort(dim=-1)[1][:, -self.target_class]
         
+        # set target class
+        #self.model.set_target_class(y, la_target)
+        
         startt = time.time()
         # runs the attack only on correctly classified points
         im2 = x[pred].detach().clone()
         la2 = y[pred].detach().clone()
         la_target2 = la_target[pred].detach().clone()
+        
+        # set target class for correcty classified points
+        self.model.set_target_class(la2, la_target2)
+        
         if len(im2.shape) == self.ndims:
             im2 = im2.unsqueeze(0)
         bs = im2.shape[0]
@@ -573,14 +577,17 @@ class FABAttack():
             while counter_iter < self.n_iter:
                 with torch.no_grad():
                     df, dg = self.get_diff_logits_grads_batch_targeted(x1, la2, la_target2)
+                    if len(df.shape) == 1:
+                        df.unsqueeze_(1)
+                        dg.unsqueeze_(1)
                     if self.norm == 'Linf':
                         dist1 = df.abs() / (1e-12 +
                                             dg.abs()
-                                            .view(dg.shape[0], dg.shape[1], -1)
+                                            .reshape(dg.shape[0], dg.shape[1], -1)
                                             .sum(dim=-1))
                     elif self.norm == 'L2':
                         dist1 = df.abs() / (1e-12 + (dg ** 2)
-                                            .view(dg.shape[0], dg.shape[1], -1)
+                                            .reshape(dg.shape[0], dg.shape[1], -1)
                                             .sum(dim=-1).sqrt())
                     elif self.norm == 'L1':
                         dist1 = df.abs() / (1e-12 + dg.abs().reshape(
@@ -590,7 +597,7 @@ class FABAttack():
                     ind = dist1.min(dim=1)[1]
                     #print(ind)
                     dg2 = dg[u1, ind]
-                    b = (- df[u1, ind] + (dg2 * x1).view(x1.shape[0], -1)
+                    b = (- df[u1, ind] + (dg2 * x1).reshape(x1.shape[0], -1)
                                          .sum(dim=-1))
                     w = dg2.reshape([bs, -1])
 
@@ -642,10 +649,10 @@ class FABAttack():
                                 [ind_adv.shape[0], -1]).abs().max(dim=1)[0]
                         elif self.norm == 'L2':
                             t = ((x1[ind_adv] - im2[ind_adv]) ** 2)\
-                                .view(ind_adv.shape[0], -1).sum(dim=-1).sqrt()
+                                .reshape(ind_adv.shape[0], -1).sum(dim=-1).sqrt()
                         elif self.norm == 'L1':
                             t = (x1[ind_adv] - im2[ind_adv])\
-                                .abs().view(ind_adv.shape[0], -1).sum(dim=-1)
+                                .abs().reshape(ind_adv.shape[0], -1).sum(dim=-1)
                         adv[ind_adv] = x1[ind_adv] * (t < res2[ind_adv]).\
                             float().reshape([-1, *[1]*self.ndims]) + adv[ind_adv]\
                             * (t >= res2[ind_adv]).float().reshape(
@@ -656,7 +663,7 @@ class FABAttack():
                             x1[ind_adv] - im2[ind_adv]) * self.beta
 
                     counter_iter += 1
-
+            
             counter_restarts += 1
 
         ind_succ = res2 < 1e10
@@ -694,9 +701,9 @@ class FABAttack():
                         
                         acc_curr = self.model.predict(adv_curr).max(1)[1] == y_to_fool
                         if self.norm == 'Linf':
-                            res = (x_to_fool - adv_curr).abs().view(x_to_fool.shape[0], -1).max(1)[0]
+                            res = (x_to_fool - adv_curr).abs().reshape(x_to_fool.shape[0], -1).max(1)[0]
                         elif self.norm == 'L2':
-                            res = ((x_to_fool - adv_curr) ** 2).view(x_to_fool.shape[0], -1).sum(dim=-1).sqrt()
+                            res = ((x_to_fool - adv_curr) ** 2).reshape(x_to_fool.shape[0], -1).sum(dim=-1).sqrt()
                         acc_curr = torch.max(acc_curr, res > self.eps)
                         
                         ind_curr = (acc_curr == 0).nonzero().squeeze()
@@ -708,8 +715,10 @@ class FABAttack():
                                 counter, acc.float().mean(), self.eps, time.time() - startt))
 
             else:
-                for target_class in range(2, 11):
+                for target_class in range(2, self.n_target_classes + 2):
                     self.target_class = target_class
+                    #
+                    
                     for counter in range(self.n_restarts):
                         ind_to_fool = acc.nonzero().squeeze()
                         if len(ind_to_fool.shape) == 0: ind_to_fool = ind_to_fool.unsqueeze(0)
@@ -719,9 +728,9 @@ class FABAttack():
                             
                             acc_curr = self.model.predict(adv_curr).max(1)[1] == y_to_fool
                             if self.norm == 'Linf':
-                                res = (x_to_fool - adv_curr).abs().view(x_to_fool.shape[0], -1).max(1)[0]
+                                res = (x_to_fool - adv_curr).abs().reshape(x_to_fool.shape[0], -1).max(1)[0]
                             elif self.norm == 'L2':
-                                res = ((x_to_fool - adv_curr) ** 2).view(x_to_fool.shape[0], -1).sum(dim=-1).sqrt()
+                                res = ((x_to_fool - adv_curr) ** 2).reshape(x_to_fool.shape[0], -1).sum(dim=-1).sqrt()
                             acc_curr = torch.max(acc_curr, res > self.eps)
                             
                             ind_curr = (acc_curr == 0).nonzero().squeeze()

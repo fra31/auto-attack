@@ -11,7 +11,7 @@ class ModelAdapter():
         self.num_classes = num_classes
         
         # gradients of logits
-        if num_classes <= 100:
+        if num_classes <= 10:
             self.grads = [None] * num_classes
             for cl in range(num_classes):
                 self.grads[cl] = tf.gradients(self.logits[:, cl], self.x_input)[0]
@@ -44,6 +44,22 @@ class ModelAdapter():
         
         return torch.from_numpy(g2).cuda()
 
+    def set_target_class(self, y, y_target):
+        la = y.cpu().numpy()
+        la_target = y_target.cpu().numpy()
+        l = [None] * y.shape[0]
+        for c in range(y.shape[0]):
+            l[c] = self.logits[c, la_target[c]] - self.logits[c, la[c]]
+        self.diff_logits = tf.stack(l)
+        self.grad_diff_logits = tf.gradients(self.diff_logits, self.x_input)[0]
+    
+    def get_grad_diff_logits_target(self, x, y=None, y_target=None):
+        x2 = np.moveaxis(x.cpu().numpy(), 1, 3)
+        dl, g2 = self.sess.run([self.diff_logits, self.grad_diff_logits], {self.x_input: x2})
+        g2 = np.transpose(np.array(g2), (0, 3, 1, 2))
+        
+        return torch.from_numpy(dl).cuda(), torch.from_numpy(g2).cuda()
+    
     def get_logits_loss_grad_xent(self, x, y):
         x2 = np.moveaxis(x.cpu().numpy(), 1, 3)
         y2 = y.clone().cpu().numpy()

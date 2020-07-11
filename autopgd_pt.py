@@ -232,7 +232,8 @@ class APGDAttack():
 
 class APGDAttack_targeted():
     def __init__(self, model, n_iter=100, norm='Linf', n_restarts=1, eps=None,
-                 seed=0, eot_iter=1, rho=.75, verbose=False, device='cuda'):
+                 seed=0, eot_iter=1, rho=.75, verbose=False, device='cuda',
+                 n_target_classes=9):
         self.model = model
         self.n_iter = n_iter
         self.eps = eps
@@ -244,6 +245,7 @@ class APGDAttack_targeted():
         self.verbose = verbose
         self.target_class = None
         self.device = device
+        self.n_target_classes = n_target_classes
     
     def check_oscillation(self, x, j, k, y5, k3=0.5):
         t = np.zeros(x.shape[1])
@@ -409,7 +411,7 @@ class APGDAttack_targeted():
             raise ValueError('not implemented yet')
         
         else:
-            for target_class in range(2, 11):
+            for target_class in range(2, self.n_target_classes + 2):
                 self.target_class = target_class
                 for counter in range(self.n_restarts):
                     ind_to_fool = acc.nonzero().squeeze()
