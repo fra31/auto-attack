@@ -66,7 +66,6 @@ class ModelAdapter():
 
         return logits, xent, grad_xent
 
-    @tf.function
     def __get_dlr(self, logits, y_input):
         val_dlr = dlr_loss(logits, y_input, num_classes=self.num_classes)
         return val_dlr
