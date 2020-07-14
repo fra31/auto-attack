@@ -56,7 +56,7 @@ class ModelAdapter():
         return xent
 
     @tf.function
-    def _get_grad_xent(self, x_input, y_input):
+    def __get_grad_xent(self, x_input, y_input):
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x_input)
             logits = self.__get_logits(x_input)
@@ -146,7 +146,7 @@ class ModelAdapter():
         if self.data_format == 'channels_last':
             x2 = tf.transpose(x2, perm=[0,2,3,1])
 
-        logits_val, loss_indiv_val, grad_val = self._get_grad_xent(x2, y2)
+        logits_val, loss_indiv_val, grad_val = self.__get_grad_xent(x2, y2)
 
         if self.data_format == 'channels_last':
             grad_val = tf.transpose(grad_val, perm=[0,3,1,2])
