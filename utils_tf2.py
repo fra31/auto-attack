@@ -38,6 +38,7 @@ class ModelAdapter():
         logits = self.tf_model(x_input, training=False)
         return logits
 
+    @tf.function
     def __get_jacobian(self, x_input):
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x_input)
@@ -54,6 +55,7 @@ class ModelAdapter():
         xent   = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=y_input)
         return xent
 
+    @tf.function
     def _get_grad_xent(self, x_input, y_input):
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x_input)
@@ -64,10 +66,12 @@ class ModelAdapter():
 
         return logits, xent, grad_xent
 
+    @tf.function
     def __get_dlr(self, logits, y_input):
         val_dlr = dlr_loss(logits, y_input, num_classes=self.num_classes)
         return val_dlr
 
+    @tf.function
     def __get_grad_dlr(self, x_input, y_input):
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x_input)
@@ -82,6 +86,7 @@ class ModelAdapter():
         dlr_target = dlr_loss_targeted(logits, y_input, y_target, num_classes=self.num_classes)
         return dlr_target
 
+    @tf.function
     def __get_grad_dlr_target(self, x_input, y_input, y_target):
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x_input)
