@@ -39,6 +39,7 @@ class ModelAdapter():
         return logits
 
     @tf.function
+    @tf.autograph.experimental.do_not_convert
     def __get_jacobian(self, x_input):
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x_input)
@@ -56,6 +57,7 @@ class ModelAdapter():
         return xent
 
     @tf.function
+    @tf.autograph.experimental.do_not_convert
     def __get_grad_xent(self, x_input, y_input):
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x_input)
@@ -71,6 +73,7 @@ class ModelAdapter():
         return val_dlr
 
     @tf.function
+    @tf.autograph.experimental.do_not_convert
     def __get_grad_dlr(self, x_input, y_input):
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x_input)
@@ -86,6 +89,7 @@ class ModelAdapter():
         return dlr_target
 
     @tf.function
+    @tf.autograph.experimental.do_not_convert
     def __get_grad_dlr_target(self, x_input, y_input, y_target):
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x_input)
