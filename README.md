@@ -87,7 +87,7 @@ The robust accuracy is computed at `eps = 8/255` in the Linf-norm.\
 The robust accuracy is computed at `eps = 0.3` in the Linf-norm.
 
 |#    |paper           |model     |clean         |report. |AA  |
-|:---:|---|:---:|---:|---:|---:|---:|
+|:---:|---|:---:|---:|---:|---:|
 |**1**| [(Zhang et al., 2020)](https://arxiv.org/abs/1906.06316)| *available*| 98.38| 96.38| 93.96|
 |**2**| [(Gowal et al., 2019)](https://arxiv.org/abs/1810.12715)| *available*| 98.34| 93.78| 92.83|
 |**3**| [(Zhang et al., 2019b)](https://arxiv.org/abs/1901.08573)| *available*| 99.48| 95.60| 92.81|
@@ -183,7 +183,7 @@ where the optional flags activate respectively the *individual* evaluations (all
 
 ## Other versions
 ### AutoAttack+
-A more exepnsive evaluation can be used specifying `version='plus'` when initializing AutoAttack. This includes
+A more expensive evaluation can be used specifying `version='plus'` when initializing AutoAttack. This includes
 + *untargeted APGD-CE* (5 restarts),
 + *untargeted APGD-DLR* (5 restarts),
 + *untargeted FAB* (5 restarts),
