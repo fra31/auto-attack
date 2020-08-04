@@ -19,11 +19,10 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=str, default='./model_test.pt')
     parser.add_argument('--n_ex', type=int, default=1000)
     parser.add_argument('--individual', action='store_true')
-    parser.add_argument('--cheap', action='store_true')
     parser.add_argument('--save_dir', type=str, default='./results')
     parser.add_argument('--batch_size', type=int, default=500)
-    parser.add_argument('--plus', action='store_true')
     parser.add_argument('--log_path', type=str, default='./log_file.txt')
+    parser.add_argument('--version', type=str, default='standard')
     
     args = parser.parse_args()
 
@@ -46,35 +45,34 @@ if __name__ == '__main__':
     
     # load attack    
     from autoattack import AutoAttack
-    adversary = AutoAttack(model, norm=args.norm, eps=args.epsilon, log_path=args.log_path)
+    adversary = AutoAttack(model, norm=args.norm, eps=args.epsilon, log_path=args.log_path,
+        version=args.version)
     
     l = [x for (x, y) in test_loader]
     x_test = torch.cat(l, 0)
     l = [y for (x, y) in test_loader]
     y_test = torch.cat(l, 0)
     
-    # cheap version
-    if args.cheap:
-        adversary.cheap()
-    
-    # plus version
-    if args.plus:
-        adversary.plus = True
+    # example of custom version
+    if args.version == 'custom':
+        adversary.attacks_to_run = ['apgd-ce', 'fab']
+        adversary.apgd.n_restarts = 2
+        adversary.fab.n_restarts = 2
     
     # run attack and save images
     with torch.no_grad():
         if not args.individual:
-            adv_complete = adversary.run_standard_evaluation(x_test[:args.n_ex], y_test[:args.n_ex], bs=args.batch_size)
+            adv_complete = adversary.run_standard_evaluation(x_test[:args.n_ex], y_test[:args.n_ex],
+                bs=args.batch_size)
             
-            torch.save({'adv_complete': adv_complete}, '{}/{}_1_{}_eps_{:.5f}_plus_{}_cheap_{}.pth'.format(
-                args.save_dir, 'aa', adv_complete.shape[0], args.epsilon, args.plus, args.cheap))
+            torch.save({'adv_complete': adv_complete}, '{}/{}_{}_1_{}_eps_{:.5f}.pth'.format(
+                args.save_dir, 'aa', args.version, adv_complete.shape[0], args.epsilon))
 
         else:
             # individual version, each attack is run on all test points
-            # specify attacks to run with
-            # adversary.attacks_to_run = ['apgd-ce']
-            adv_complete = adversary.run_standard_evaluation_individual(x_test[:args.n_ex], y_test[:args.n_ex], bs=args.batch_size)
+            adv_complete = adversary.run_standard_evaluation_individual(x_test[:args.n_ex],
+                y_test[:args.n_ex], bs=args.batch_size)
             
-            torch.save(adv_complete, '{}/{}_individual_1_{}_eps_{:.5f}_plus_{}_cheap_{}.pth'.format(
-                args.save_dir, 'aa', args.n_ex, args.epsilon, args.plus, args.cheap))
+            torch.save(adv_complete, '{}/{}_{}_individual_1_{}_eps_{:.5f}_plus_{}_cheap_{}.pth'.format(
+                args.save_dir, 'aa', args.version, args.n_ex, args.epsilon))
                 
