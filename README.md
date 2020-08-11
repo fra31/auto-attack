@@ -114,7 +114,8 @@ The robust accuracy is computed at `eps = 0.5` in the L2-norm.
 
 ### Installation
 
-```pip install git+https://github.com/fra31/auto-attack/
+```
+pip install git+https://github.com/fra31/auto-attack
 ```
 
 ### PyTorch models
