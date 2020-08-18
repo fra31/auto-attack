@@ -64,7 +64,7 @@ The robust accuracy is evaluated at `eps = 8/255`, except for those marked with 
 |**19**| [(Shafahi et al., 2019)](https://arxiv.org/abs/1904.12843)| *available*| WRN-34-10| 86.11| 46.19| 41.47|
 |**20**| [(Ding et al., 2020)](https://openreview.net/forum?id=HkeryxBtPB)| *available*| WRN-28-4| 84.36| 47.18| 41.44|
 |**21**| [(Atzmon et al., 2019)](https://arxiv.org/abs/1905.11911)\*| *available*| RN-18| 81.30| 43.17| 40.22|
-|**22**| [(Moosavi-Dezfooli et al., 2019)](http://openaccess.thecvf.com/content_CVPR_2019/html/Moosavi-Dezfooli_Robustness_via_Curvature_Regularization_and_Vice_Versa_CVPR_2019_paper)| *available*| WRN-28-10| 83.11| 41.4| 38.50|
+|**22**| [(Moosavi-Dezfooli et al., 2019)](http://openaccess.thecvf.com/content_CVPR_2019/html/Moosavi-Dezfooli_Robustness_via_Curvature_Regularization_and_Vice_Versa_CVPR_2019_paper)| *authors*| WRN-28-10| 83.11| 41.4| 38.50|
 |**23**| [(Zhang & Wang, 2019)](http://papers.nips.cc/paper/8459-defense-against-adversarial-attacks-using-feature-scattering-based-adversarial-training)| *available*| WRN-28-10| 89.98| 60.6| 36.64|
 |**24**| [(Zhang & Xu, 2020)](https://openreview.net/forum?id=Syejj0NYvr&noteId=Syejj0NYvr)| *available*| WRN-28-10| 90.25| 68.7| 36.45|
 |**25**| [(Jang et al., 2019)](http://openaccess.thecvf.com/content_ICCV_2019/html/Jang_Adversarial_Defense_via_Learning_to_Generate_Diverse_Attacks_ICCV_2019_paper.html)| *available*| RN-20| 78.91| 37.40| 34.95|
@@ -100,11 +100,12 @@ The robust accuracy is computed at `eps = 0.3` in the Linf-norm.
 |**9**| [(Taghanaki et al., 2019)](http://openaccess.thecvf.com/content_CVPR_2019/html/Taghanaki_A_Kernelized_Manifold_Mapping_to_Diminish_the_Effect_of_Adversarial_CVPR_2019_paper.html)| *retrained*| 98.86| 64.25| 0.00|
 
 ## CIFAR-10 - L2
-The robust accuracy is computed at `eps = 0.5` in the L2-norm.
+The robust accuracy is computed at `eps = 0.5` in the L2-norm.\
+**Note**: ‡ indicates models which exploit additional data for training (e.g. unlabeled data, pre-training).
 
 |#    |paper           |model     |architecture |clean         |report. |AA  |
 |:---:|---|:---:|:---:|---:|---:|---:|
-|**1**| [(Augustin et al., 2020)](https://arxiv.org/abs/2003.09461)| *authors*| RN-50| 91.08| 73.27| 72.91|
+|**1**| [(Augustin et al., 2020)](https://arxiv.org/abs/2003.09461)‡| *authors*| RN-50| 91.08| 73.27| 72.91|
 |**2**| [(Engstrom et al., 2019)](https://github.com/MadryLab/robustness)| *available*| RN-50| 90.83| 70.11| 69.24|
 |**3**| [(Rice et al., 2020)](https://arxiv.org/abs/2002.11569)| *available*| RN-18| 88.67| 71.6| 67.68|
 |**4**| [(Rony et al., 2019)](https://arxiv.org/abs/1811.09600)| *available*| WRN-28-10| 89.05| 67.6| 66.44|
