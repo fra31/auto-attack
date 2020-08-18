@@ -5,6 +5,7 @@
 ICML 2020\
 [https://arxiv.org/abs/2003.01690](https://arxiv.org/abs/2003.01690)
 
+
 We propose to use an ensemble of four diverse attacks to reliably evaluate robustness:
 + **APGD-CE**, our new step size-free version of PGD on the cross-entropy,
 + **APGD-DLR**, our new step size-free version of PGD on the new DLR loss,
@@ -110,6 +111,12 @@ The robust accuracy is computed at `eps = 0.5` in the L2-norm.
 |**5**| [(Ding et al., 2020)](https://openreview.net/forum?id=HkeryxBtPB)| *available*| WRN-28-4| 88.02| 66.18| 66.09|
 
 # How to use AutoAttack
+
+### Installation
+
+```
+pip install git+https://github.com/fra31/auto-attack
+```
 
 ### PyTorch models
 Import and initialize AutoAttack with
