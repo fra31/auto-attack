@@ -199,6 +199,12 @@ A more expensive evaluation can be used specifying `version='plus'` when initial
 + *targeted APGD-DLR* (9 target classes),
 + *targeted FAB* (9 target classes).
 
+### Randomized defenses
+In case of classifiers with stochastic components one can combine AA with Expectation over Transformation (EoT) as in [(Athalye et al., 2018)](https://arxiv.org/abs/1802.00420) specifying `version='rand'` when initializing AutoAttack.
+This runs
++ *untargeted APGD-CE* (no restarts, 20 iterations for EoT),
++ *untargeted APGD-DLR* (no restarts, 20 iterations for EoT).
+
 ### Custom version
 It is possible to customize the attacks to run specifying `version='custom'` when initializing the attack and then, for example,
 ```python

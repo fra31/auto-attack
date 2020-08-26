@@ -57,7 +57,7 @@ class AutoAttack():
             self.apgd_targeted = APGDAttack_targeted(self.model, n_restarts=1, n_iter=100, verbose=False,
                 eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed, device=self.device)
     
-        if version in ['standard', 'plus']:
+        if version in ['standard', 'plus', 'rand']:
             self.set_version(version)
         
     def get_logits(self, x):
@@ -244,4 +244,9 @@ class AutoAttack():
             self.fab.n_target_classes = 9
             self.apgd_targeted.n_target_classes = 9
             self.square.n_queries = 5000
+
+        elif version == 'rand':
+            self.attacks_to_run = ['apgd-ce', 'apgd-dlr']
+            self.apgd.n_restarts = 1
+            self.apgd.eot_iter = 20
 
