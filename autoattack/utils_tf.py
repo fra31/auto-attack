@@ -29,6 +29,15 @@ class ModelAdapter():
         self.y_target = tf.placeholder(tf.int64, shape=[None])
         self.dlr_target = dlr_loss_targeted(self.logits, self.y_input, self.y_target, num_classes=self.num_classes)
         self.grad_target = tf.gradients(self.dlr_target, self.x_input)[0]
+
+        self.la = tf.placeholder(tf.int64, shape=[None])
+        self.la_target = tf.placeholder(tf.int64, shape=[None])
+        la_mask = tf.one_hot(self.la, self.num_classes)
+        la_target_mask = tf.one_hot(self.la_target, self.num_classes)
+        la_logit = tf.reduce_sum(la_mask * self.logits, axis=1)
+        la_target_logit = tf.reduce_sum(la_target_mask * self.logits, axis=1)
+        self.diff_logits = la_target_logit - la_logit
+        self.grad_diff_logits = tf.gradients(self.diff_logits, self.x_input)[0]
     
     def predict(self, x):
         x2 = np.moveaxis(x.cpu().numpy(), 1, 3)
@@ -44,18 +53,11 @@ class ModelAdapter():
         
         return torch.from_numpy(g2).cuda()
 
-    def set_target_class(self, y, y_target):
+    def get_grad_diff_logits_target(self, x, y=None, y_target=None):
         la = y.cpu().numpy()
         la_target = y_target.cpu().numpy()
-        l = [None] * y.shape[0]
-        for c in range(y.shape[0]):
-            l[c] = self.logits[c, la_target[c]] - self.logits[c, la[c]]
-        self.diff_logits = tf.stack(l)
-        self.grad_diff_logits = tf.gradients(self.diff_logits, self.x_input)[0]
-    
-    def get_grad_diff_logits_target(self, x, y=None, y_target=None):
         x2 = np.moveaxis(x.cpu().numpy(), 1, 3)
-        dl, g2 = self.sess.run([self.diff_logits, self.grad_diff_logits], {self.x_input: x2})
+        dl, g2 = self.sess.run([self.diff_logits, self.grad_diff_logits], {self.x_input: x2, self.la: la, self.la_target: la_target})
         g2 = np.transpose(np.array(g2), (0, 3, 1, 2))
         
         return torch.from_numpy(dl).cuda(), torch.from_numpy(g2).cuda()
