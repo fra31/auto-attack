@@ -30,7 +30,6 @@ class ModelAdapter():
         self.dlr_target = dlr_loss_targeted(self.logits, self.y_input, self.y_target, num_classes=self.num_classes)
         self.grad_target = tf.gradients(self.dlr_target, self.x_input)[0]
 
-        # logits difference and relative gradients for fab-t
         self.la = tf.placeholder(tf.int64, shape=[None])
         self.la_target = tf.placeholder(tf.int64, shape=[None])
         la_mask = tf.one_hot(self.la, self.num_classes)
