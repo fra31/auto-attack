@@ -13,8 +13,8 @@ import torchvision.transforms as transforms
 import sys
 sys.path.insert(0, '..')
 
-from autoattack import AutoAttack
-import utils_tf2
+from autoattack import AutoAttack, utils_tf2
+
 
 #%%
 class mnist_loader:

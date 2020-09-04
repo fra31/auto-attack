@@ -525,7 +525,7 @@ class FABAttack():
         la_target2 = la_target[pred].detach().clone()
         
         # set target class for correcty classified points
-        self.model.set_target_class(la2, la_target2)
+        #self.model.set_target_class(la2, la_target2)
         
         if len(im2.shape) == self.ndims:
             im2 = im2.unsqueeze(0)

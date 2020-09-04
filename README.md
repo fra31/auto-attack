@@ -90,7 +90,7 @@ The robust accuracy is computed at `eps = 0.3` in the Linf-norm.
 
 |#    |paper           |model     |clean         |report. |AA  |
 |:---:|---|:---:|---:|---:|---:|
-|**1**| [(Zhang et al., 2020)](https://arxiv.org/abs/1906.06316)| *available*| 98.38| 96.38| 93.96|
+|**1**| [(Zhang et al., 2020a)](https://arxiv.org/abs/1906.06316)| *available*| 98.38| 96.38| 93.96|
 |**2**| [(Gowal et al., 2019)](https://arxiv.org/abs/1810.12715)| *available*| 98.34| 93.78| 92.83|
 |**3**| [(Zhang et al., 2019b)](https://arxiv.org/abs/1901.08573)| *available*| 99.48| 95.60| 92.81|
 |**4**| [(Ding et al., 2020)](https://openreview.net/forum?id=HkeryxBtPB)| *available*| 98.95| 92.59| 91.40|

@@ -103,14 +103,13 @@ class ModelAdapter():
     @tf.function
     @tf.autograph.experimental.do_not_convert
     def __get_grad_diff_logits_target(self, x, la, la_target):
+        la_mask = tf.one_hot(la, self.num_classes)
+        la_target_mask = tf.one_hot(la_target, self.num_classes)
+        
         with tf.GradientTape(watch_accessed_variables=False) as g:
             g.watch(x)
             logits = self.__get_logits(x)
-            l = [None] * x.shape[0]
-            for c in range(x.shape[0]):
-                l[c] = logits[c, la_target[c]] - logits[c, la[c]]
-            
-            difflogits = tf.stack(l)
+            difflogits = tf.reduce_sum((la_target_mask - la_mask) * logits, axis=1)
     
         g2 = g.gradient(difflogits, x)
         
