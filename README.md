@@ -228,7 +228,7 @@ To log the intermediate results of the evaluation specify `log_path=/path/to/log
 ```
 @inproceedings{croce2020reliable,
     title = {Reliable evaluation of adversarial robustness with an ensemble of diverse parameter-free attacks},
-    authors = {Francesco Croce and Matthias Hein},
+    author = {Francesco Croce and Matthias Hein},
     booktitle = {ICML},
     year = {2020}
 }
