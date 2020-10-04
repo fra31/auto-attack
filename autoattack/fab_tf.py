@@ -440,7 +440,7 @@ class FABAttack():
                     a2 = a0[-bs:]
                     alpha = torch.min(torch.max(a1 / (a1 + a2),
                                                 torch.zeros(a1.shape)
-                                                .to(self.device))[0],
+                                                .to(self.device)),
                                       self.alpha_max * torch.ones(a1.shape)
                                       .to(self.device))
                     x1 = ((x1 + self.eta * d1) * (1 - alpha) +
@@ -633,7 +633,7 @@ class FABAttack():
                     a2 = a0[-bs:]
                     alpha = torch.min(torch.max(a1 / (a1 + a2),
                                                 torch.zeros(a1.shape)
-                                                .to(self.device))[0],
+                                                .to(self.device)),
                                       self.alpha_max * torch.ones(a1.shape)
                                       .to(self.device))
                     x1 = ((x1 + self.eta * d1) * (1 - alpha) +
