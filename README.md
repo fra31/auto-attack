@@ -82,7 +82,7 @@ The robust accuracy is evaluated at `eps = 8/255`, except for those marked with 
 |**37**| [(Kim & Wang, 2020)](https://openreview.net/forum?id=rJlf_RVKwr)| *available*| WRN-34-10| 91.51| 57.23| 34.22|
 |**38**| [(Wang & Zhang, 2019)](http://openaccess.thecvf.com/content_ICCV_2019/html/Wang_Bilateral_Adversarial_Training_Towards_Fast_Training_of_More_Robust_Models_ICCV_2019_paper.html)| *available*| WRN-28-10| 92.80| 58.6| 29.35|
 |**39**| [(Xiao et al., 2020)](https://arxiv.org/abs/1905.10510)\*| *available*| DenseNet-121| 79.28| 52.4| 18.50|
-|**40**| [(Jin & Rinard, 2020)](https://arxiv.org/abs/2003.04286)| *available*| RN-18| 90.84| 71.22| 1.35|
+|**40**| [(Jin & Rinard, 2020)](https://arxiv.org/abs/2003.04286v1) | [*available*](https://github.com/charlesjin/adversarial_regularization/blob/6a3704757dcc7c707ff38f8b9de6f2e9e27e0a89/pretrained/pretrained88.pth) | RN-18| 90.84| 71.22| 1.35|
 |**41**| [(Mustafa et al., 2019)](https://arxiv.org/abs/1904.00887)| *available*| RN-110| 89.16| 32.32| 0.28|
 |**42**| [(Chan et al., 2020)](https://arxiv.org/abs/1912.10185)| *retrained*| WRN-34-10| 93.79| 15.5| 0.26|
 
