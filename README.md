@@ -48,11 +48,11 @@ The robust accuracy is evaluated at `eps = 8/255`, except for those marked with 
 |**3**| [(Wu et al., 2020b)](https://arxiv.org/abs/2004.05884)‡| *available*| WRN-28-10| 88.25| 60.04| 60.04|
 |**4**| [(Wu et al., 2020a)](https://arxiv.org/abs/2010.01279)‡| *available*| WRN-34-15| 85.60| 59.78| 59.78|
 |**5**| [(Carmon et al., 2019)](https://arxiv.org/abs/1905.13736)‡| *available*| WRN-28-10| 89.69| 62.5| 59.53|
-|**6**| [(Sehwag et al., 2020)](https://github.com/fra31/auto-attack/issues/7)‡| *available*| WRN-28-10| 88.98| -| 57.14|
-|**7**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)| *authors*| WRN-70-16| 84.33| 56.43| 56.46|
-|**8**| [(Wang et al., 2020)](https://openreview.net/forum?id=rklOg6EFwS)‡| *available*| WRN-28-10| 87.50| 65.04| 56.29|
-|**9**| [(Wu et al., 2020b)](https://arxiv.org/abs/2004.05884)| *available*| WRN-34-10| 85.36| 56.17| 56.17|
-|**10**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)| *authors*| WRN-34-20| 84.56| 56.04| 56.14|
+|**6**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)| *authors*| WRN-70-16| 85.29| 57.14| 57.20|
+|**7**| [(Sehwag et al., 2020)](https://github.com/fra31/auto-attack/issues/7)‡| *available*| WRN-28-10| 88.98| -| 57.14|
+|**8**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)| *authors*| WRN-34-20| 85.64| 56.82| 56.86|
+|**9**| [(Wang et al., 2020)](https://openreview.net/forum?id=rklOg6EFwS)‡| *available*| WRN-28-10| 87.50| 65.04| 56.29|
+|**10**| [(Wu et al., 2020b)](https://arxiv.org/abs/2004.05884)| *available*| WRN-34-10| 85.36| 56.17| 56.17|
 |**11**| [(Alayrac et al., 2019)](https://arxiv.org/abs/1905.13725)‡| *available*| WRN-106-8| 86.46| 56.30| 56.03|
 |**12**| [(Hendrycks et al., 2019)](https://arxiv.org/abs/1901.09960)‡| *available*| WRN-28-10| 87.11| 57.4| 54.92|
 |**13**| [(Pang et al., 2020c)](https://arxiv.org/abs/2010.00467)| *available*| WRN-34-20| 86.43| 54.39| 54.39|
@@ -93,7 +93,7 @@ The robust accuracy is computed at `eps = 8/255` in the Linf-norm.\
 |#    |paper           |model     |architecture |clean         |report. |AA  |
 |:---:|---|:---:|:---:|---:|---:|---:|
 |**1**| [(Gowal et al. 2020)](https://arxiv.org/abs/2010.03593)‡| *authors*| WRN-70-16| 69.15| 37.70| 36.88|
-|**2**| [(Gowal et al. 2020)](https://arxiv.org/abs/2010.03593)| *authors*| WRN-70-16| 61.01| 30.54| 29.86|
+|**2**| [(Gowal et al. 2020)](https://arxiv.org/abs/2010.03593)| *authors*| WRN-70-16| 60.86| 30.67| 30.03|
 |**3**| [(Wu et al., 2020b)](https://arxiv.org/abs/2004.05884)| *available*| WRN-34-10| 60.38| 28.86| 28.86|
 |**4**| [(Hendrycks et al., 2019)](https://arxiv.org/abs/1901.09960)‡| *available*| WRN-28-10| 59.23| 33.5| 28.42|
 |**5**| [(Chen et al., 2020b)](https://github.com/fra31/auto-attack/issues/26)| *available*| WRN-34-10| 62.15| -| 26.94|
@@ -123,7 +123,7 @@ The robust accuracy is computed at `eps = 0.5` in the L2-norm.\
 |#    |paper           |model     |architecture |clean         |report. |AA  |
 |:---:|---|:---:|:---:|---:|---:|---:|
 |**1**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)‡| *authors*| WRN-70-16| 94.74| -| 80.53|
-|**2**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)| *authors*| WRN-70-16| 89.37| -| 73.69|
+|**2**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)| *authors*| WRN-70-16| 90.90| -| 74.50|
 |**3**| [(Wu et al., 2020b)](https://arxiv.org/abs/2004.05884)| *available*| WRN-34-10| 88.51| 73.66| 73.66|
 |**4**| [(Augustin et al., 2020)](https://arxiv.org/abs/2003.09461)‡| *authors*| RN-50| 91.08| 73.27| 72.91|
 |**5**| [(Engstrom et al., 2019)](https://github.com/MadryLab/robustness)| *available*| RN-50| 90.83| 70.11| 69.24|
