@@ -37,6 +37,8 @@ We plan to add new models as they appear and are made available. Feel free to su
 
 **To have a model added**: please check [here](https://github.com/fra31/auto-attack/issues/new/choose).
 
+**Checkpoints**: many of the evaluated models are available and easily accessible at this [Model Zoo](https://github.com/RobustBench/robustbench).
+
 ## CIFAR-10 - Linf
 The robust accuracy is evaluated at `eps = 8/255`, except for those marked with * for which `eps = 0.031`, where `eps` is the maximal Linf-norm allowed for the adversarial perturbations. The `eps` used is the same set in the original papers.\
 **Note**: ‡ indicates models which exploit additional data for training (e.g. unlabeled data, pre-training).
