@@ -15,6 +15,7 @@ We propose to use an ensemble of four diverse attacks to reliably evaluate robus
 **Note**: we fix all the hyperparameters of the attacks, so no tuning is required to test every new classifier.
 
 ## News
++ [Oct 2020] AutoAttack is used as standard evaluation in the new benchmark [RobustBench](https://robustbench.github.io/), which includes a [Model Zoo](https://github.com/RobustBench/robustbench) of the most robust classifiers! Note that this page and RobustBench's leaderboards are maintained simultaneously.
 + [Aug 2020]
 	+ **Updated version**: in order to *i)* scale AutoAttack (AA) to datasets with many classes and *ii)* have a faster and more accurate evaluation, we use APGD-DLR and FAB with their *targeted* versions.
 	+ We add the evaluation of models on CIFAR-100 wrt Linf and CIFAR-10 wrt L2.
