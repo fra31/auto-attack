@@ -227,6 +227,9 @@ class AutoAttack():
         return adv
         
     def set_version(self, version='standard'):
+        if self.verbose:
+            print('setting parameters for {} version'.format(version))
+        
         if version == 'standard':
             self.attacks_to_run = ['apgd-ce', 'apgd-t', 'fab-t', 'square']
             self.apgd.n_restarts = 1
