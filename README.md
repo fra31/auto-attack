@@ -90,18 +90,21 @@ The robust accuracy is evaluated at `eps = 8/255`, except for those marked with 
 |**42**| [(Chan et al., 2020)](https://arxiv.org/abs/1912.10185)| *retrained*| WRN-34-10| 93.79| 15.5| 0.26|
 
 ## CIFAR-100 - Linf
-The robust accuracy is computed at `eps = 8/255` in the Linf-norm.\
+The robust accuracy is computed at `eps = 8/255` in the Linf-norm, except for the models marked with * for which `eps = 0.031` is used. \
 **Note**: ‡ indicates models which exploit additional data for training (e.g. unlabeled data, pre-training).
 
 |#    |paper           |model     |architecture |clean         |report. |AA  |
 |:---:|---|:---:|:---:|---:|---:|---:|
 |**1**| [(Gowal et al. 2020)](https://arxiv.org/abs/2010.03593)‡| *authors*| WRN-70-16| 69.15| 37.70| 36.88|
-|**2**| [(Gowal et al. 2020)](https://arxiv.org/abs/2010.03593)| *authors*| WRN-70-16| 60.86| 30.67| 30.03|
-|**3**| [(Wu et al., 2020b)](https://arxiv.org/abs/2004.05884)| *available*| WRN-34-10| 60.38| 28.86| 28.86|
-|**4**| [(Hendrycks et al., 2019)](https://arxiv.org/abs/1901.09960)‡| *available*| WRN-28-10| 59.23| 33.5| 28.42|
-|**5**| [(Chen et al., 2020b)](https://github.com/fra31/auto-attack/issues/26)| *available*| WRN-34-10| 62.15| -| 26.94|
-|**6**| [(Sitawarin et al., 2020)](https://github.com/fra31/auto-attack/issues/22)| *available*| WRN-34-10| 62.82| 24.57| 24.57|
-|**7**| [(Rice et al., 2020)](https://arxiv.org/abs/2002.11569)| *available*| RN-18| 53.83| 28.1| 18.95|
+|**2**| [(Cui et al., 2020)](https://arxiv.org/abs/2011.11164)\*| *available*| WRN-34-20| 62.55| 30.20| 30.20|
+|**3**| [(Gowal et al. 2020)](https://arxiv.org/abs/2010.03593)| *authors*| WRN-70-16| 60.86| 30.67| 30.03|
+|**4**| [(Cui et al., 2020)](https://arxiv.org/abs/2011.11164)\*| *available*| WRN-34-10| 60.64| 29.33| 29.33|
+|**5**| [(Wu et al., 2020b)](https://arxiv.org/abs/2004.05884)| *available*| WRN-34-10| 60.38| 28.86| 28.86|
+|**6**| [(Hendrycks et al., 2019)](https://arxiv.org/abs/1901.09960)‡| *available*| WRN-28-10| 59.23| 33.5| 28.42|
+|**7**| [(Cui et al., 2020)](https://arxiv.org/abs/2011.11164)\*| *available*| WRN-34-10| 70.25| 27.16| 27.16|
+|**8**| [(Chen et al., 2020b)](https://github.com/fra31/auto-attack/issues/26)| *available*| WRN-34-10| 62.15| -| 26.94|
+|**9**| [(Sitawarin et al., 2020)](https://github.com/fra31/auto-attack/issues/22)| *available*| WRN-34-10| 62.82| 24.57| 24.57|
+|**10**| [(Rice et al., 2020)](https://arxiv.org/abs/2002.11569)| *available*| RN-18| 53.83| 28.1| 18.95|
 
 ## MNIST - Linf
 The robust accuracy is computed at `eps = 0.3` in the Linf-norm.
