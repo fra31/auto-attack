@@ -193,11 +193,27 @@ class ModelAdapter():
         
         return torch.from_numpy(logits_val.numpy()).cuda(), torch.from_numpy(loss_indiv_val.numpy()).cuda(), torch.from_numpy(grad_val.numpy()).cuda()
 
-def dlr_loss(x, y, num_classes=10):
-    x_sort = tf.sort(x, axis=1)
-    y_onehot = tf.one_hot(y, num_classes)
-    ### TODO: adapt to the case when the point is already misclassified
-    loss = -(x_sort[:, -1] - x_sort[:, -2]) / (x_sort[:, -1] - x_sort[:, -3] + 1e-12)
+def dir_loss(x, y, num_classes=10):
+
+    # logit
+    logit = x
+    logit_sort = tf.sort(logit, axis=1)
+
+    # onthot_y
+    y_onehot = tf.one_hot(y , num_classes, dtype=tf.float32)
+    logit_y = tf.reduce_sum(y_onehot * logit, axis=1)
+
+    # z_i
+    logit_pred = tf.reduce_max(logit, axis=1)
+    cond = (logit_pred == logit_y)
+    z_i = tf.where(cond, logit_sort[:, -2], logit_sort[:, -1])
+
+    # loss
+    z_y = logit_y
+    z_p1 =  logit_sort[:, -1]
+    z_p3 = logit_sort[:, -3]
+
+    loss = - (z_y - z_i) / (z_p1 - z_p3 + 1e-12)
 
     return loss
 
