@@ -193,7 +193,7 @@ class ModelAdapter():
         
         return torch.from_numpy(logits_val.numpy()).cuda(), torch.from_numpy(loss_indiv_val.numpy()).cuda(), torch.from_numpy(grad_val.numpy()).cuda()
 
-def dir_loss(x, y, num_classes=10):
+def dlr_loss(x, y, num_classes=10):
 
     # logit
     logit = x
