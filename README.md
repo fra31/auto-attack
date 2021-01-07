@@ -46,14 +46,14 @@ The robust accuracy is evaluated at `eps = 8/255`, except for those marked with 
 
 |#    |paper           |model     |architecture |clean         |report. |AA  |
 |:---:|---|:---:|:---:|---:|---:|---:|
-|**1**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)‡| *authors*| WRN-70-16| 91.10| 65.87| 65.88|
-|**2**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)‡| *authors*| WRN-28-10| 89.48| 62.76| 62.80|
-|**3**| [(Wu et al., 2020b)](https://arxiv.org/abs/2004.05884)‡| *available*| WRN-28-10| 88.25| 60.04| 60.04|
-|**4**| [(Wu et al., 2020a)](https://arxiv.org/abs/2010.01279)‡| *available*| WRN-34-15| 85.60| 59.78| 59.78|
+|**1**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)‡| *available*| WRN-70-16| 91.10| 65.87| 65.88|
+|**2**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)‡| *available*| WRN-28-10| 89.48| 62.76| 62.80|
+|**3**| [(Wu et al., 2020a)](https://arxiv.org/abs/2010.01279)‡| *available*| WRN-34-15| 87.67| 60.65| 60.65|
+|**4**| [(Wu et al., 2020b)](https://arxiv.org/abs/2004.05884)‡| *available*| WRN-28-10| 88.25| 60.04| 60.04|
 |**5**| [(Carmon et al., 2019)](https://arxiv.org/abs/1905.13736)‡| *available*| WRN-28-10| 89.69| 62.5| 59.53|
-|**6**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)| *authors*| WRN-70-16| 85.29| 57.14| 57.20|
+|**6**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)| *available*| WRN-70-16| 85.29| 57.14| 57.20|
 |**7**| [(Sehwag et al., 2020)](https://github.com/fra31/auto-attack/issues/7)‡| *available*| WRN-28-10| 88.98| -| 57.14|
-|**8**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)| *authors*| WRN-34-20| 85.64| 56.82| 56.86|
+|**8**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)| *available*| WRN-34-20| 85.64| 56.82| 56.86|
 |**9**| [(Wang et al., 2020)](https://openreview.net/forum?id=rklOg6EFwS)‡| *available*| WRN-28-10| 87.50| 65.04| 56.29|
 |**10**| [(Wu et al., 2020b)](https://arxiv.org/abs/2004.05884)| *available*| WRN-34-10| 85.36| 56.17| 56.17|
 |**11**| [(Alayrac et al., 2019)](https://arxiv.org/abs/1905.13725)‡| *available*| WRN-106-8| 86.46| 56.30| 56.03|
@@ -97,9 +97,9 @@ The robust accuracy is computed at `eps = 8/255` in the Linf-norm, except for th
 
 |#    |paper           |model     |architecture |clean         |report. |AA  |
 |:---:|---|:---:|:---:|---:|---:|---:|
-|**1**| [(Gowal et al. 2020)](https://arxiv.org/abs/2010.03593)‡| *authors*| WRN-70-16| 69.15| 37.70| 36.88|
+|**1**| [(Gowal et al. 2020)](https://arxiv.org/abs/2010.03593)‡| *available*| WRN-70-16| 69.15| 37.70| 36.88|
 |**2**| [(Cui et al., 2020)](https://arxiv.org/abs/2011.11164)\*| *available*| WRN-34-20| 62.55| 30.20| 30.20|
-|**3**| [(Gowal et al. 2020)](https://arxiv.org/abs/2010.03593)| *authors*| WRN-70-16| 60.86| 30.67| 30.03|
+|**3**| [(Gowal et al. 2020)](https://arxiv.org/abs/2010.03593)| *available*| WRN-70-16| 60.86| 30.67| 30.03|
 |**4**| [(Cui et al., 2020)](https://arxiv.org/abs/2011.11164)\*| *available*| WRN-34-10| 60.64| 29.33| 29.33|
 |**5**| [(Wu et al., 2020b)](https://arxiv.org/abs/2004.05884)| *available*| WRN-34-10| 60.38| 28.86| 28.86|
 |**6**| [(Hendrycks et al., 2019)](https://arxiv.org/abs/1901.09960)‡| *available*| WRN-28-10| 59.23| 33.5| 28.42|
@@ -113,7 +113,7 @@ The robust accuracy is computed at `eps = 0.3` in the Linf-norm.
 
 |#    |paper           |model     |clean         |report. |AA  |
 |:---:|---|:---:|---:|---:|---:|
-|**1**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)| *authors*| 99.26| 96.38| 96.34|
+|**1**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)| *available*| 99.26| 96.38| 96.34|
 |**2**| [(Zhang et al., 2020a)](https://arxiv.org/abs/1906.06316)| *available*| 98.38| 96.38| 93.96|
 |**3**| [(Gowal et al., 2019)](https://arxiv.org/abs/1810.12715)| *available*| 98.34| 93.78| 92.83|
 |**4**| [(Zhang et al., 2019b)](https://arxiv.org/abs/1901.08573)| *available*| 99.48| 95.60| 92.81|
@@ -130,8 +130,8 @@ The robust accuracy is computed at `eps = 0.5` in the L2-norm.\
 
 |#    |paper           |model     |architecture |clean         |report. |AA  |
 |:---:|---|:---:|:---:|---:|---:|---:|
-|**1**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)‡| *authors*| WRN-70-16| 94.74| -| 80.53|
-|**2**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)| *authors*| WRN-70-16| 90.90| -| 74.50|
+|**1**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)‡| *available*| WRN-70-16| 94.74| -| 80.53|
+|**2**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)| *available*| WRN-70-16| 90.90| -| 74.50|
 |**3**| [(Wu et al., 2020b)](https://arxiv.org/abs/2004.05884)| *available*| WRN-34-10| 88.51| 73.66| 73.66|
 |**4**| [(Augustin et al., 2020)](https://arxiv.org/abs/2003.09461)‡| *authors*| RN-50| 91.08| 73.27| 72.91|
 |**5**| [(Engstrom et al., 2019)](https://github.com/MadryLab/robustness)| *available*| RN-50| 90.83| 70.11| 69.24|
