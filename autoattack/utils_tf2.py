@@ -355,7 +355,6 @@ class ModelAdapter():
         # Convert result to pt format
         if self.data_format == 'channels_last':
             g2 = tf.transpose(g2, perm=[0,1,4,2,3])
-        logits = self.__tf_to_pt(logits)
         g2 = self.__tf_to_pt(g2)
 
         return g2
