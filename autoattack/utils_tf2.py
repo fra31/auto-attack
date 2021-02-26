@@ -196,7 +196,7 @@ class ModelAdapter():
 
         jacobian = g.batch_jacobian(logits, x_input)
 
-        return jacobian
+        return logits, jacobian
 
 
     @tf.function
@@ -335,12 +335,13 @@ class ModelAdapter():
 
     def grad_logits(self, x):
         """
-        Get gradient of logits
+        Get logits and gradient of logits
 
         Args:
             x: (pytorch_tensor) Input data
 
         Returns:
+            logits: (pytorch_tensor) Logits
             g2: (pytorch_tensor) Jacobian
         """
 
@@ -350,14 +351,15 @@ class ModelAdapter():
             x2 = tf.transpose(x2, perm=[0,2,3,1])
         
         # Get result
-        g2 = self.__get_jacobian(x2)
+        logits, g2 = self.__get_jacobian(x2)
 
         # Convert result to pt format
         if self.data_format == 'channels_last':
             g2 = tf.transpose(g2, perm=[0,1,4,2,3])
+        logits = self.__tf_to_pt(logits)
         g2 = self.__tf_to_pt(g2)
 
-        return g2
+        return logits, g2
 
 
     def get_logits_loss_grad_xent(self, x, y):

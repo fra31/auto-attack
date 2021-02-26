@@ -47,11 +47,11 @@ class ModelAdapter():
 
     def grad_logits(self, x):
         x2 = np.moveaxis(x.cpu().numpy(), 1, 3)
-        g2 = self.sess.run(self.grads, {self.x_input: x2})
+        logits, g2 = self.sess.run([self.logits, self.grads], {self.x_input: x2})
         g2 = np.moveaxis(np.array(g2), 0, 1)
         g2 = np.transpose(g2, (0, 1, 4, 2, 3))
         
-        return torch.from_numpy(g2).cuda()
+        return torch.from_numpy(logits).cuda(), torch.from_numpy(g2).cuda()
 
     def get_grad_diff_logits_target(self, x, y=None, y_target=None):
         la = y.cpu().numpy()
