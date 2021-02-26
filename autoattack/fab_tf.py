@@ -23,8 +23,6 @@ from autoattack.fab_base import FABAttack
 #from .base import Attack
 #from .base import LabelMixin
 
-DEFAULT_EPS_DICT_BY_NORM = {'Linf': .3, 'L2': 1., 'L1': 5.0}
-
 
 class FABAttack_TF(FABAttack):
     """
