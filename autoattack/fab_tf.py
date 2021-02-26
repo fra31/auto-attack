@@ -85,9 +85,7 @@ class FABAttack():
         return x if len(x.shape) > 0 else x.unsqueeze(0)
 
     def get_diff_logits_grads_batch(self, imgs, la):
-        ### TODO: get both gradients and values with a single pass
-        g2 = self.model.grad_logits(imgs)
-        y2 = self.model.predict(imgs)
+        y2, g2 = self.model.grad_logits(imgs)
         df = y2 - y2[torch.arange(imgs.shape[0]), la].unsqueeze(1)
         dg = g2 - g2[torch.arange(imgs.shape[0]), la].unsqueeze(1)
         df[torch.arange(imgs.shape[0]), la] = 1e10
