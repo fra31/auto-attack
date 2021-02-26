@@ -31,7 +31,7 @@ class FABAttack_TF(FABAttack):
     Fast Adaptive Boundary Attack (Linf, L2, L1)
     https://arxiv.org/abs/1907.02044
     
-    :param predict:       forward pass function
+    :param model:         TF_model
     :param norm:          Lp-norm to minimize ('Linf', 'L2', 'L1' supported)
     :param n_restarts:    number of random restarts
     :param n_iter:        number of iterations
@@ -44,20 +44,20 @@ class FABAttack_TF(FABAttack):
     def __init__(
             self,
             model,
-            norm,
-            n_restarts,
-            n_iter,
-            eps,
-            alpha_max,
-            eta,
-            beta,
-            loss_fn,
-            verbose,
-            seed,
-            targeted,
-            device,
-            n_target_classes):
-        """ FAB-attack implementation in pytorch """
+            norm='Linf',
+            n_restarts=1,
+            n_iter=100,
+            eps=None,
+            alpha_max=0.1,
+            eta=1.05,
+            beta=0.9,
+            loss_fn=None,
+            verbose=False,
+            seed=0,
+            targeted=False,
+            device=None,
+            n_target_classes=9):
+        """ FAB-attack implementation in TF2 """
 
         self.model = model
         super().__init__(norm,
