@@ -75,9 +75,12 @@ class FABAttack():
         self.device = device
         self.n_target_classes = n_target_classes
     
+    def _predict_fn(self, x):
+        return self.model.predict(x)
+
     def _get_predicted_label(self, x):
         with torch.no_grad():
-            outputs = self.model.predict(x)
+            outputs = self._predict_fn(x)
         _, y = torch.max(outputs, dim=1)
         return y
     
@@ -181,7 +184,7 @@ class FABAttack():
                     if self.norm == 'Linf':
                         dist1 = df.abs() / (1e-12 +
                                             dg.abs()
-                                            .reshape(dg.shape[0], dg.shape[1], -1) # view(...)
+                                            .reshape(dg.shape[0], dg.shape[1], -1)
                                             .sum(dim=-1))
                     elif self.norm == 'L2':
                         dist1 = df.abs() / (1e-12 + (dg ** 2)
@@ -194,7 +197,7 @@ class FABAttack():
                         raise ValueError('norm not supported')
                     ind = dist1.min(dim=1)[1]
                     dg2 = dg[u1, ind]
-                    b = (- df[u1, ind] + (dg2 * x1).reshape(x1.shape[0], -1) # view(...)
+                    b = (- df[u1, ind] + (dg2 * x1).reshape(x1.shape[0], -1)
                                          .sum(dim=-1))
                     w = dg2.reshape([bs, -1])
 
@@ -282,7 +285,8 @@ class FABAttack():
         :param y:    clean labels, if None we use the predicted labels
         """
 
-        self.device = x.device
+        if self.device is None:
+            self.device = x.device
         self.orig_dim = list(x.shape[1:])
         self.ndims = len(self.orig_dim)
 
@@ -302,21 +306,14 @@ class FABAttack():
             return x
         pred = self.check_shape(pred.nonzero().squeeze())
 
-        output = self.model.predict(x)
+        output = self._predict_fn(x)
         la_target = output.sort(dim=-1)[1][:, -self.target_class]
-        
-        # set target class
-        #self.model.set_target_class(y, la_target)
-        
+
         startt = time.time()
         # runs the attack only on correctly classified points
         im2 = x[pred].detach().clone()
         la2 = y[pred].detach().clone()
         la_target2 = la_target[pred].detach().clone()
-        
-        # set target class for correcty classified points
-        #self.model.set_target_class(la2, la_target2)
-        
         if len(im2.shape) == self.ndims:
             im2 = im2.unsqueeze(0)
         bs = im2.shape[0]
@@ -474,7 +471,7 @@ class FABAttack():
             self.device = x.device
         adv = x.clone()
         with torch.no_grad():
-            acc = self.model.predict(x).max(1)[1] == y
+            acc = self._predict_fn(x).max(1)[1] == y
             
             startt = time.time()
             
@@ -489,7 +486,7 @@ class FABAttack():
                         x_to_fool, y_to_fool = x[ind_to_fool].clone(), y[ind_to_fool].clone()
                         adv_curr = self.attack_single_run(x_to_fool, y_to_fool, use_rand_start=(counter > 0))
                         
-                        acc_curr = self.model.predict(adv_curr).max(1)[1] == y_to_fool
+                        acc_curr = self._predict_fn(adv_curr).max(1)[1] == y_to_fool
                         if self.norm == 'Linf':
                             res = (x_to_fool - adv_curr).abs().reshape(x_to_fool.shape[0], -1).max(1)[0]
                         elif self.norm == 'L2':
@@ -507,8 +504,7 @@ class FABAttack():
             else:
                 for target_class in range(2, self.n_target_classes + 2):
                     self.target_class = target_class
-                    #
-                    
+
                     for counter in range(self.n_restarts):
                         ind_to_fool = acc.nonzero().squeeze()
                         if len(ind_to_fool.shape) == 0: ind_to_fool = ind_to_fool.unsqueeze(0)
@@ -516,7 +512,7 @@ class FABAttack():
                             x_to_fool, y_to_fool = x[ind_to_fool].clone(), y[ind_to_fool].clone()
                             adv_curr = self.attack_single_run_targeted(x_to_fool, y_to_fool, use_rand_start=(counter > 0))
                             
-                            acc_curr = self.model.predict(adv_curr).max(1)[1] == y_to_fool
+                            acc_curr = self._predict_fn(adv_curr).max(1)[1] == y_to_fool
                             if self.norm == 'Linf':
                                 res = (x_to_fool - adv_curr).abs().reshape(x_to_fool.shape[0], -1).max(1)[0]
                             elif self.norm == 'L2':
