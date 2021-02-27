@@ -345,9 +345,6 @@ class FABAttack():
             while counter_iter < self.n_iter:
                 with torch.no_grad():
                     df, dg = self.get_diff_logits_grads_batch_targeted(x1, la2, la_target2)
-                    if len(df.shape) == 1:
-                        df.unsqueeze_(1)
-                        dg.unsqueeze_(1)
                     if self.norm == 'Linf':
                         dist1 = df.abs() / (1e-12 +
                                             dg.abs()
