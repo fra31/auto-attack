@@ -91,5 +91,7 @@ class FABAttack_TF(FABAttack):
 
     def get_diff_logits_grads_batch_targeted(self, imgs, la, la_target):
         df, dg = self.model.get_grad_diff_logits_target(imgs, la, la_target)
-        
+        df.unsqueeze_(1)
+        dg.unsqueeze_(1)
+
         return df, dg
