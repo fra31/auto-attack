@@ -28,8 +28,8 @@ class AutoAttack():
             self.apgd = APGDAttack(self.model, n_restarts=5, n_iter=100, verbose=False,
                 eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed, device=self.device)
             
-            from .fab_pt import FABAttack
-            self.fab = FABAttack(self.model, n_restarts=5, n_iter=100, eps=self.epsilon, seed=self.seed,
+            from .fab_pt import FABAttack_PT
+            self.fab = FABAttack_PT(self.model, n_restarts=5, n_iter=100, eps=self.epsilon, seed=self.seed,
                 norm=self.norm, verbose=False, device=self.device)
         
             from .square import SquareAttack
@@ -45,8 +45,8 @@ class AutoAttack():
             self.apgd = APGDAttack(self.model, n_restarts=5, n_iter=100, verbose=False,
                 eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed, device=self.device)
             
-            from .fab_tf import FABAttack
-            self.fab = FABAttack(self.model, n_restarts=5, n_iter=100, eps=self.epsilon, seed=self.seed,
+            from .fab_tf import FABAttack_TF
+            self.fab = FABAttack_TF(self.model, n_restarts=5, n_iter=100, eps=self.epsilon, seed=self.seed,
                 norm=self.norm, verbose=False, device=self.device)
         
             from .square import SquareAttack
