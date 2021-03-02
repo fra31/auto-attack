@@ -15,7 +15,7 @@ import time
 import math
 import torch.nn.functional as F
 
-from autoattack.autopgd_pt import L1_projection
+from autoattack.autopgd_base import L1_projection
 
 class SquareAttack():
     """
@@ -63,7 +63,7 @@ class SquareAttack():
         self.loss = loss
         self.rescale_schedule = resc_schedule
         self.device = device
-        #self.return_all = False
+        self.return_all = False
     
     def margin_and_loss(self, x, y):
         """
