@@ -492,7 +492,7 @@ class APGDAttack():
             iters = [.3 * self.n_iter_orig, .3 * self.n_iter_orig,
                 .4 * self.n_iter_orig]
             iters = [math.ceil(c) for c in iters]
-            iters[-1] = self.n_iter - sum(iters[:-1]) # make sure to use the given iterations
+            iters[-1] = self.n_iter_orig - sum(iters[:-1]) # make sure to use the given iterations
             if self.verbose:
                 print('using schedule [{}x{}]'.format('+'.join([str(c
                     ) for c in epss]), '+'.join([str(c) for c in iters])))
@@ -651,7 +651,7 @@ class APGDAttack_targeted(APGDAttack):
             iters = [.3 * self.n_iter_orig, .3 * self.n_iter_orig,
                 .4 * self.n_iter_orig]
             iters = [math.ceil(c) for c in iters]
-            iters[-1] = self.n_iter - sum(iters[:-1])
+            iters[-1] = self.n_iter_orig - sum(iters[:-1])
             if self.verbose:
                 print('using schedule [{}x{}]'.format('+'.join([str(c
                     ) for c in epss]), '+'.join([str(c) for c in iters])))
