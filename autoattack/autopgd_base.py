@@ -354,7 +354,7 @@ class APGDAttack():
                     sparsegrad = grad * (grad.abs() >= grad_topk).float()
                     x_adv_1 = x_adv + step_size * sparsegrad.sign() / (
                         sparsegrad.sign().abs().view(x.shape[0], -1).sum(dim=-1).view(
-                        -1, 1, 1, 1) + 1e-10)
+                        -1, *[1]*(len(x.shape) - 1)) + 1e-10)
                     
                     delta_u = x_adv_1 - x
                     delta_p = L1_projection(x, delta_u, self.eps)
@@ -552,7 +552,7 @@ class APGDAttack():
             x_init = None
         else:
             x_init = x + torch.randn_like(x)
-            x_init += L1_projection(x, x_init, 1. * float(epss[0]))
+            x_init += L1_projection(x, x_init - x, 1. * float(epss[0]))
         eps_target = float(epss[-1])
         if self.verbose:
             print('total iter: {}'.format(sum(iters)))
@@ -563,7 +563,7 @@ class APGDAttack():
             self.eps = eps + 0.
             #
             if not x_init is None:
-                x_init += L1_projection(x, x_init - x, eps)
+                x_init += L1_projection(x, x_init - x, 1. * eps)
             x_init, acc, loss, x_adv = self.attack_single_run(x, y, x_init=x_init)
 
         return (x_init, acc, loss, x_adv)

@@ -15,6 +15,7 @@ We propose to use an ensemble of four diverse attacks to reliably evaluate robus
 **Note**: we fix all the hyperparameters of the attacks, so no tuning is required to test every new classifier.
 
 ## News
++ [Mar 2021] A version of AutoAttack wrt L1, which includes the extensions of APGD and Square Attack [(Croce & Hein, 2021)](https://arxiv.org/abs/2103.01208), is available!
 + [Oct 2020] AutoAttack is used as standard evaluation in the new benchmark [RobustBench](https://robustbench.github.io/), which includes a [Model Zoo](https://github.com/RobustBench/robustbench) of the most robust classifiers! Note that this page and RobustBench's leaderboards are maintained simultaneously.
 + [Aug 2020]
 	+ **Updated version**: in order to *i)* scale AutoAttack (AA) to datasets with many classes and *ii)* have a faster and more accurate evaluation, we use APGD-DLR and FAB with their *targeted* versions.
