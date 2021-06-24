@@ -1,4 +1,6 @@
 import os
+import collections.abc as container_abcs
+
 import torch
 
 class Logger():
@@ -46,3 +48,11 @@ def makedir(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
+def zero_gradients(x):
+    if isinstance(x, torch.Tensor):
+        if x.grad is not None:
+            x.grad.detach_()
+            x.grad.zero_()
+    elif isinstance(x, container_abcs.Iterable):
+        for elem in x:
+            zero_gradients(elem)
