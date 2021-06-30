@@ -182,7 +182,7 @@ To specify a subset of attacks add e.g. `adversary.attacks_to_run = ['apgd-ce']`
 To evaluate models implemented in TensorFlow 1.X, use
 
 ```python
-import utils_tf
+from autoattack import utils_tf
 model_adapted = utils_tf.ModelAdapter(logits, x_input, y_input, sess)
 
 from autoattack import AutoAttack
@@ -198,7 +198,7 @@ where:
 If TensorFlow's version is 2.X, use
 
 ```python
-import utils_tf2
+from autoattack import utils_tf2
 model_adapted = utils_tf2.ModelAdapter(tf_model)
 
 from autoattack import AutoAttack

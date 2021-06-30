@@ -95,7 +95,7 @@ def mnist_model():
 #%%
 def arg_parser(parser):
 
-    parser.add_argument("--path" , dest ="path", type=str, default='./', help="path of tf.keras model's wieghts")
+    parser.add_argument("--path" , dest ="path", type=str, default='./autoattack/examples/tf_model.weight.h5', help="path of tf.keras model's wieghts")
     args, unknown = parser.parse_known_args()
     if unknown:
         msg = " ".join(unknown)
