@@ -11,11 +11,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import torch
-from torch.autograd.gradcheck import zero_gradients
+#from torch.autograd.gradcheck import zero_gradients
 import time
 
 import tensorflow as tf
 
+from autoattack.other_utils import zero_gradients
 from autoattack.fab_base import FABAttack
 
 #from advertorch.utils import replicate_input
