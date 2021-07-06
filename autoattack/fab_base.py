@@ -13,7 +13,6 @@ from __future__ import unicode_literals
 import time
 
 import torch
-from autoattack.other_utils import zero_gradients
 
 from autoattack.fab_projections import projection_linf, projection_l2,\
     projection_l1
