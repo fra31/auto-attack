@@ -184,11 +184,11 @@ class AutoAttack():
             # final check
             if self.verbose:
                 if self.norm == 'Linf':
-                    res = (x_adv - x_orig).abs().view(x_orig.shape[0], -1).max(1)[0]
+                    res = (x_adv - x_orig).abs().reshape(x_orig.shape[0], -1).max(1)[0]
                 elif self.norm == 'L2':
-                    res = ((x_adv - x_orig) ** 2).view(x_orig.shape[0], -1).sum(-1).sqrt()
+                    res = ((x_adv - x_orig) ** 2).reshape(x_orig.shape[0], -1).sum(-1).sqrt()
                 elif self.norm == 'L1':
-                    res = (x_adv - x_orig).abs().view(x_orig.shape[0], -1).sum(dim=-1)
+                    res = (x_adv - x_orig).abs().reshape(x_orig.shape[0], -1).sum(dim=-1)
                 self.logger.log('max {} perturbation: {:.5f}, nan in tensor: {}, max: {:.5f}, min: {:.5f}'.format(
                     self.norm, res.max(), (x_adv != x_adv).sum(), x_adv.max(), x_adv.min()))
                 self.logger.log('robust accuracy: {:.2%}'.format(robust_accuracy))
