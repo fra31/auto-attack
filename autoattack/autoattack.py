@@ -71,7 +71,7 @@ class AutoAttack():
     def get_seed(self):
         return time.time() if self.seed is None else self.seed
     
-    def run_standard_evaluation(self, x_orig, y_orig, bs=250):
+    def run_standard_evaluation(self, x_orig, y_orig, bs=250, return_labels=False):
         if self.verbose:
             print('using {} version including {}'.format(self.version,
                 ', '.join(self.attacks_to_run)))
@@ -194,8 +194,10 @@ class AutoAttack():
                 self.logger.log('max {} perturbation: {:.5f}, nan in tensor: {}, max: {:.5f}, min: {:.5f}'.format(
                     self.norm, res.max(), (x_adv != x_adv).sum(), x_adv.max(), x_adv.min()))
                 self.logger.log('robust accuracy: {:.2%}'.format(robust_accuracy))
-        
-        return x_adv, y_adv
+        if return_labels:
+            return x_adv, y_adv
+        else:
+            return x_adv
         
     def clean_accuracy(self, x_orig, y_orig, bs=250):
         n_batches = math.ceil(x_orig.shape[0] / bs)
@@ -211,7 +213,7 @@ class AutoAttack():
         
         return acc.item() / x_orig.shape[0]
         
-    def run_standard_evaluation_individual(self, x_orig, y_orig, bs=250):
+    def run_standard_evaluation_individual(self, x_orig, y_orig, bs=250, return_labels=False):
         if self.verbose:
             print('using {} version including {}'.format(self.version,
                 ', '.join(self.attacks_to_run)))
@@ -224,8 +226,11 @@ class AutoAttack():
         for c in l_attacks:
             startt = time.time()
             self.attacks_to_run = [c]
-            x_adv, y_adv = self.run_standard_evaluation(x_orig, y_orig, bs=bs)
-            adv[c] = (x_adv, y_adv)
+            x_adv, y_adv = self.run_standard_evaluation(x_orig, y_orig, bs=bs, return_labels=True)
+            if return_labels:
+                adv[c] = (x_adv, y_adv)
+            else:
+                adv[c] = x_adv
             if verbose_indiv:    
                 acc_indiv  = self.clean_accuracy(x_adv, y_orig, bs=bs)
                 space = '\t \t' if c == 'fab' else '\t'
