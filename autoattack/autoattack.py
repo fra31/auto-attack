@@ -71,7 +71,7 @@ class AutoAttack():
     def get_seed(self):
         return time.time() if self.seed is None else self.seed
     
-    def run_standard_evaluation(self, x_orig, y_orig, bs=250):
+    def run_standard_evaluation(self, x_orig, y_orig, bs=250, return_labels=False):
         if self.verbose:
             print('using {} version including {}'.format(self.version,
                 ', '.join(self.attacks_to_run)))
@@ -80,14 +80,16 @@ class AutoAttack():
             # calculate accuracy
             n_batches = int(np.ceil(x_orig.shape[0] / bs))
             robust_flags = torch.zeros(x_orig.shape[0], dtype=torch.bool, device=x_orig.device)
+            y_adv = torch.empty_like(y_orig)
             for batch_idx in range(n_batches):
                 start_idx = batch_idx * bs
                 end_idx = min( (batch_idx + 1) * bs, x_orig.shape[0])
 
                 x = x_orig[start_idx:end_idx, :].clone().to(self.device)
                 y = y_orig[start_idx:end_idx].clone().to(self.device)
-                output = self.get_logits(x)
-                correct_batch = y.eq(output.max(dim=1)[1])
+                output = self.get_logits(x).max(dim=1)[1]
+                y_adv[start_idx: end_idx] = output
+                correct_batch = y.eq(output)
                 robust_flags[start_idx:end_idx] = correct_batch.detach().to(robust_flags.device)
 
             robust_accuracy = torch.sum(robust_flags).item() / x_orig.shape[0]
@@ -163,13 +165,14 @@ class AutoAttack():
                     else:
                         raise ValueError('Attack not supported')
                 
-                    output = self.get_logits(adv_curr)
-                    false_batch = ~y.eq(output.max(dim=1)[1]).to(robust_flags.device)
+                    output = self.get_logits(adv_curr).max(dim=1)[1]
+                    false_batch = ~y.eq(output).to(robust_flags.device)
                     non_robust_lin_idcs = batch_datapoint_idcs[false_batch]
                     robust_flags[non_robust_lin_idcs] = False
 
                     x_adv[non_robust_lin_idcs] = adv_curr[false_batch].detach().to(x_adv.device)
-                
+                    y_adv[non_robust_lin_idcs] = output[false_batch].detach().to(x_adv.device)
+
                     if self.verbose:
                         num_non_robust_batch = torch.sum(false_batch)    
                         self.logger.log('{} - {}/{} - {} out of {} successfully perturbed'.format(
@@ -191,8 +194,10 @@ class AutoAttack():
                 self.logger.log('max {} perturbation: {:.5f}, nan in tensor: {}, max: {:.5f}, min: {:.5f}'.format(
                     self.norm, res.max(), (x_adv != x_adv).sum(), x_adv.max(), x_adv.min()))
                 self.logger.log('robust accuracy: {:.2%}'.format(robust_accuracy))
-        
-        return x_adv
+        if return_labels:
+            return x_adv, y_adv
+        else:
+            return x_adv
         
     def clean_accuracy(self, x_orig, y_orig, bs=250):
         n_batches = math.ceil(x_orig.shape[0] / bs)
@@ -208,7 +213,7 @@ class AutoAttack():
         
         return acc.item() / x_orig.shape[0]
         
-    def run_standard_evaluation_individual(self, x_orig, y_orig, bs=250):
+    def run_standard_evaluation_individual(self, x_orig, y_orig, bs=250, return_labels=False):
         if self.verbose:
             print('using {} version including {}'.format(self.version,
                 ', '.join(self.attacks_to_run)))
@@ -221,9 +226,13 @@ class AutoAttack():
         for c in l_attacks:
             startt = time.time()
             self.attacks_to_run = [c]
-            adv[c] = self.run_standard_evaluation(x_orig, y_orig, bs=bs)
+            x_adv, y_adv = self.run_standard_evaluation(x_orig, y_orig, bs=bs, return_labels=True)
+            if return_labels:
+                adv[c] = (x_adv, y_adv)
+            else:
+                adv[c] = x_adv
             if verbose_indiv:    
-                acc_indiv  = self.clean_accuracy(adv[c], y_orig, bs=bs)
+                acc_indiv  = self.clean_accuracy(x_adv, y_orig, bs=bs)
                 space = '\t \t' if c == 'fab' else '\t'
                 self.logger.log('robust accuracy by {} {} {:.2%} \t (time attack: {:.1f} s)'.format(
                     c.upper(), space, acc_indiv,  time.time() - startt))
