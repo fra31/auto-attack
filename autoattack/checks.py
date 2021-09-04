@@ -3,6 +3,8 @@ import warnings
 import math
 import sys
 
+from autoattack.other_utils import L2_norm
+
 
 funcs = {'grad': 0,
     'backward': 0,
@@ -13,16 +15,24 @@ funcs = {'grad': 0,
 checks_doc_path = 'flags_doc.md'
 
 
-def check_randomized(model, x, y, bs=250, n=5, logger=None):
+def check_randomized(model, x, y, bs=250, n=5, alpha=1e-4, logger=None):
     acc = []
     corrcl = []
+    outputs = []
     with torch.no_grad():
         for _ in range(n):
             output = model(x)
             corrcl_curr = (output.max(1)[1] == y).sum().item()
             corrcl.append(corrcl_curr)
+            outputs.append(output / (L2_norm(output, keepdim=True) + 1e-10))
     acc = [c != corrcl_curr for c in corrcl]
-    if any(acc):
+    max_diff = 0.
+    for c in range(n - 1):
+        for e in range(c + 1, n):
+            diff = L2_norm(outputs[c] - outputs[e])
+            max_diff = max(max_diff, diff.max().item())
+            #print(diff.max().item(), max_diff)
+    if any(acc) or max_diff > alpha:
         msg = 'it seems to be a randomized defense! Please use version="rand".' + \
             f' See {checks_doc_path} for details.'
         if logger is None:

@@ -9,7 +9,7 @@ We introduce a few automatic checks to warn the user in case the classifier pres
 some suggestion about how the robustness evaluation could be improved in the specific cases.
 
 ### Randomized defenses
-**Raised if** the clean accuracy of the classifier on a batch varies across multiple runs.\
+**Raised if** the clean accuracy of the classifier on a batch or the corresponding logits vary across multiple runs.\
 **Explanation:** non deterministic classifiers need to be evaluated with specific techniques e.g. EoT [(Athalye et al., 2018)]() and mislead
 standard attacks. We suggest to use AA with `version='rand'`, which inclueds APGD combined with EoT. Note that since only the accuracy is computed, there might still be some random components
 in the network which however do not change the prediction.
