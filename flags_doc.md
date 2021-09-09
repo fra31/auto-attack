@@ -22,7 +22,8 @@ there might be numerical instabilities which prevent the gradient-based attacks 
 ### Zero gradient
 **Raised if** the gradient at the (random) starting point of APGD is zero for any image when using the DLR loss. \
 **Explanation:** zero gradient prevents progress in gradient-based iterative attacks. A source of it could be connected to the cross-entropy loss and the scale of the logits, but a remedy consists in
-using margin based losses ([Carlini & Wagner, 2017](https://ieeexplore.ieee.org/abstract/document/7958570); [Croce & Hein, 2020](https://arxiv.org/abs/2003.01690)). Vanishing gradients can be also due to specific components of the networks, like input quantization (see [here]()), which do not allow
+using margin based losses ([Carlini & Wagner, 2017](https://ieeexplore.ieee.org/abstract/document/7958570); [Croce & Hein, 2020](https://arxiv.org/abs/2003.01690)). Vanishing gradients can be also due to specific
+components of the networks, like input quantization (see e.g. https://github.com/fra31/auto-attack/issues/44), which do not allow
 backpropagation. In this case one might use BPDA [(Athalye et al., 2018)](http://proceedings.mlr.press/v80/athalye18a.html), which approximates such functions with differentiable counterparts, or black-box attacks, especially those, like Square Attack, which do not rely on
 gradient estimation.
 
