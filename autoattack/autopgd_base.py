@@ -13,7 +13,7 @@ import math
 import random
 
 from autoattack.other_utils import L0_norm, L1_norm, L2_norm
-
+from autoattack.checks import check_zero_gradients
 
 
 def L1_projection(x2, y2, eps1):
@@ -117,7 +117,8 @@ class APGDAttack():
             verbose=False,
             device=None,
             use_largereps=False,
-            is_tf_model=False):
+            is_tf_model=False,
+            logger=None):
         """
         AutoPGD implementation in PyTorch
         """
@@ -143,6 +144,7 @@ class APGDAttack():
         self.eps_orig = eps + 0.
         self.is_tf_model = is_tf_model
         self.y_target = None
+        self.logger = logger
     
     def init_hyperparam(self, x):
         assert self.norm in ['Linf', 'L2', 'L1']
@@ -289,6 +291,10 @@ class APGDAttack():
         grad /= float(self.eot_iter)
         grad_best = grad.clone()
 
+        if self.loss in ['dlr', 'dlr-targeted']:
+            # check if there are zero gradients
+            check_zero_gradients(grad, logger=self.logger)
+        
         acc = logits.detach().max(1)[1] == y
         acc_steps[0] = acc + 0
         loss_best = loss_indiv.detach().clone()
@@ -584,14 +590,15 @@ class APGDAttack_targeted(APGDAttack):
             verbose=False,
             device=None,
             use_largereps=False,
-            is_tf_model=False):
+            is_tf_model=False,
+            logger=None):
         """
         AutoPGD on the targeted DLR loss
         """
         super(APGDAttack_targeted, self).__init__(predict, n_iter=n_iter, norm=norm,
             n_restarts=n_restarts, eps=eps, seed=seed, loss='dlr-targeted',
             eot_iter=eot_iter, rho=rho, topk=topk, verbose=verbose, device=device,
-            use_largereps=use_largereps, is_tf_model=is_tf_model)
+            use_largereps=use_largereps, is_tf_model=is_tf_model, logger=logger)
 
         self.y_target = None
         self.n_target_classes = n_target_classes

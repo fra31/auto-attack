@@ -5,6 +5,7 @@ import numpy as np
 import torch
 
 from .other_utils import Logger
+from autoattack import checks
 
 
 class AutoAttack():
@@ -26,7 +27,8 @@ class AutoAttack():
         if not self.is_tf_model:
             from .autopgd_base import APGDAttack
             self.apgd = APGDAttack(self.model, n_restarts=5, n_iter=100, verbose=False,
-                eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed, device=self.device)
+                eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed,
+                device=self.device, logger=self.logger)
             
             from .fab_pt import FABAttack_PT
             self.fab = FABAttack_PT(self.model, n_restarts=5, n_iter=100, eps=self.epsilon, seed=self.seed,
@@ -38,13 +40,14 @@ class AutoAttack():
                 
             from .autopgd_base import APGDAttack_targeted
             self.apgd_targeted = APGDAttack_targeted(self.model, n_restarts=1, n_iter=100, verbose=False,
-                eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed, device=self.device)
+                eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed, device=self.device,
+                logger=self.logger)
     
         else:
             from .autopgd_base import APGDAttack
             self.apgd = APGDAttack(self.model, n_restarts=5, n_iter=100, verbose=False,
                 eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed, device=self.device,
-                is_tf_model=True)
+                is_tf_model=True, logger=self.logger)
             
             from .fab_tf import FABAttack_TF
             self.fab = FABAttack_TF(self.model, n_restarts=5, n_iter=100, eps=self.epsilon, seed=self.seed,
@@ -57,7 +60,7 @@ class AutoAttack():
             from .autopgd_base import APGDAttack_targeted
             self.apgd_targeted = APGDAttack_targeted(self.model, n_restarts=1, n_iter=100, verbose=False,
                 eps=self.epsilon, norm=self.norm, eot_iter=1, rho=.75, seed=self.seed, device=self.device,
-                is_tf_model=True)
+                is_tf_model=True, logger=self.logger)
     
         if version in ['standard', 'plus', 'rand']:
             self.set_version(version)
@@ -76,6 +79,15 @@ class AutoAttack():
             print('using {} version including {}'.format(self.version,
                 ', '.join(self.attacks_to_run)))
         
+        # checks on type of defense
+        if self.version != 'rand':
+            checks.check_randomized(self.get_logits, x_orig[:bs].to(self.device),
+                y_orig[:bs].to(self.device), bs=bs, logger=self.logger)
+        checks.check_range_output(self.get_logits, x_orig[:bs].to(self.device),
+            logger=self.logger)
+        checks.check_dynamic(self.model, x_orig[:bs].to(self.device), self.is_tf_model,
+            logger=self.logger)
+        
         with torch.no_grad():
             # calculate accuracy
             n_batches = int(np.ceil(x_orig.shape[0] / bs))
@@ -93,7 +105,8 @@ class AutoAttack():
                 robust_flags[start_idx:end_idx] = correct_batch.detach().to(robust_flags.device)
 
             robust_accuracy = torch.sum(robust_flags).item() / x_orig.shape[0]
-                
+            robust_accuracy_dict = {'clean': robust_accuracy}
+            
             if self.verbose:
                 self.logger.log('initial accuracy: {:.2%}'.format(robust_accuracy))
                     
@@ -179,10 +192,14 @@ class AutoAttack():
                             attack, batch_idx + 1, n_batches, num_non_robust_batch, x.shape[0]))
                 
                 robust_accuracy = torch.sum(robust_flags).item() / x_orig.shape[0]
+                robust_accuracy_dict[attack] = robust_accuracy
                 if self.verbose:
                     self.logger.log('robust accuracy after {}: {:.2%} (total time {:.1f} s)'.format(
                         attack.upper(), robust_accuracy, time.time() - startt))
                     
+            # check about square
+            checks.check_square_sr(robust_accuracy_dict, logger=self.logger)
+            
             # final check
             if self.verbose:
                 if self.norm == 'Linf':
