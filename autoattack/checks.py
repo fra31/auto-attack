@@ -74,7 +74,7 @@ def check_square_sr(acc_dict, alpha=.002, logger=None):
         acc = min([v for k, v in acc_dict.items() if k != 'square'])
         if acc_dict['square'] < acc - alpha:
             msg = 'Square Attack has decreased the robust accuracy of' + \
-                f'{acc - acc_dict["square"]:.2%}.' + \
+                f' {acc - acc_dict["square"]:.2%}.' + \
                 ' This might indicate that the robustness evaluation using' +\
                 ' AutoAttack is unreliable. Consider running Square' +\
                 ' Attack with more iterations and restarts or an adaptive attack.' + \
@@ -103,8 +103,8 @@ def check_dynamic(model, x, is_tf_model=False, logger=None):
     #    print(k, v)
     if any([c > 0 for c in funcs.values()]):
         msg = 'it seems to be a dynamic defense! The evaluation' + \
-            'with AutoAttack might be insufficient.' + \
-            f'See {checks_doc_path} for details.'
+            ' with AutoAttack might be insufficient.' + \
+            f' See {checks_doc_path} for details.'
     if not msg is None:
         if logger is None:
             warnings.warn(Warning(msg))
