@@ -136,6 +136,8 @@ The robust accuracy is computed at `eps = 0.3` in the Linf-norm.
 The robust accuracy is computed at `eps = 0.5` in the L2-norm.\
 **Note**: ‡ indicates models which exploit additional data for training (e.g. unlabeled data, pre-training).
 
+**Update**: this is no longer maintained, but an up-to-date leaderboard is available in [RobustBench](https://robustbench.github.io/).
+
 |#    |paper           |model     |architecture |clean         |report. |AA  |
 |:---:|---|:---:|:---:|---:|---:|---:|
 |**1**| [(Gowal et al., 2020)](https://arxiv.org/abs/2010.03593)‡| *available*| WRN-70-16| 94.74| -| 80.53|
