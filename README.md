@@ -15,6 +15,9 @@ We propose to use an ensemble of four diverse attacks to reliably evaluate robus
 **Note**: we fix all the hyperparameters of the attacks, so no tuning is required to test every new classifier.
 
 ## News
++ [Sep 2021]
+	+ We add [automatic checks](https://github.com/fra31/auto-attack/blob/master/flags_doc.md) for potential cases where the standard version of AA might be non suitable or sufficient for robustness evaluation.
+	+ The evaluations of models on CIFAR-10 and CIFAR-100 are no longer maintained. Up-to-date leaderboards are available in [RobustBench](https://robustbench.github.io/).
 + [Mar 2021] A version of AutoAttack wrt L1, which includes the extensions of APGD and Square Attack [(Croce & Hein, 2021)](https://arxiv.org/abs/2103.01208), is available!
 + [Oct 2020] AutoAttack is used as standard evaluation in the new benchmark [RobustBench](https://robustbench.github.io/), which includes a [Model Zoo](https://github.com/RobustBench/robustbench) of the most robust classifiers! Note that this page and RobustBench's leaderboards are maintained simultaneously.
 + [Aug 2020]
@@ -44,6 +47,8 @@ We plan to add new models as they appear and are made available. Feel free to su
 ## CIFAR-10 - Linf
 The robust accuracy is evaluated at `eps = 8/255`, except for those marked with * for which `eps = 0.031`, where `eps` is the maximal Linf-norm allowed for the adversarial perturbations. The `eps` used is the same set in the original papers.\
 **Note**: ‡ indicates models which exploit additional data for training (e.g. unlabeled data, pre-training).
+
+**Update**: this is no longer maintained, but an up-to-date leaderboard is available in [RobustBench](https://robustbench.github.io/).
 
 |#    |paper           |model     |architecture |clean         |report. |AA  |
 |:---:|---|:---:|:---:|---:|---:|---:|
@@ -94,7 +99,9 @@ The robust accuracy is evaluated at `eps = 8/255`, except for those marked with 
 
 ## CIFAR-100 - Linf
 The robust accuracy is computed at `eps = 8/255` in the Linf-norm, except for the models marked with * for which `eps = 0.031` is used. \
-**Note**: ‡ indicates models which exploit additional data for training (e.g. unlabeled data, pre-training).
+**Note**: ‡ indicates models which exploit additional data for training (e.g. unlabeled data, pre-training).\
+\
+**Update**: this is no longer maintained, but an up-to-date leaderboard is available in [RobustBench](https://robustbench.github.io/).
 
 |#    |paper           |model     |architecture |clean         |report. |AA  |
 |:---:|---|:---:|:---:|---:|---:|---:|
@@ -128,6 +135,8 @@ The robust accuracy is computed at `eps = 0.3` in the Linf-norm.
 ## CIFAR-10 - L2
 The robust accuracy is computed at `eps = 0.5` in the L2-norm.\
 **Note**: ‡ indicates models which exploit additional data for training (e.g. unlabeled data, pre-training).
+
+**Update**: this is no longer maintained, but an up-to-date leaderboard is available in [RobustBench](https://robustbench.github.io/).
 
 |#    |paper           |model     |architecture |clean         |report. |AA  |
 |:---:|---|:---:|:---:|---:|---:|---:|
