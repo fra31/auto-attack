@@ -6,7 +6,9 @@ specific modifications or adaptive attacks [(Tramèr et al., 2020)](https://arxi
 
 ## Checks
 We introduce a few automatic checks to warn the user in case the classifier presents behaviors typical of non standard models. Below we describe the type of flags which might be raised and provide
-some suggestion about how the robustness evaluation could be improved in the specific cases.
+some suggestions about how the robustness evaluation could be improved in the specific cases. Note that some of the checks are in line with the analyses and suggestions by recent works
+([Carlini et al., 2019](https://arxiv.org/abs/1902.06705); [Croce et al., 2020](https://arxiv.org/abs/2010.09670); [Pintor et al., 2021](https://arxiv.org/abs/2106.09947)) which provide guidelines for 
+evaluating robustness and detecting failures of attacks.
 
 ### Randomized defenses
 **Raised if** the clean accuracy of the classifier on a batch or the corresponding logits vary across multiple runs.\

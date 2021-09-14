@@ -1,3 +1,7 @@
 data/
 /__pycache__/
 */__pycache__/
+
+build/
+dist/
+*.egg-info/
