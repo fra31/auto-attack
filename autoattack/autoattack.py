@@ -201,8 +201,6 @@ class AutoAttack():
                         self.logger.log('{} - {}/{} - {} out of {} successfully perturbed'.format(
                             attack, batch_idx + 1, n_batches, num_non_robust_batch, x.shape[0]))
                 
-                # # import pdb; pdb.set_trace()
-                # max_nr = round(initial_accuracy * x_orig.shape[0])
 
                 robust_accuracy = torch.sum(robust_flags).item() / x_orig.shape[0]
                 robust_accuracy_dict[attack] = robust_accuracy
