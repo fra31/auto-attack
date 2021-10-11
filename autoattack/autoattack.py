@@ -88,6 +88,8 @@ class AutoAttack():
         checks.check_dynamic(self.model, x_orig[:bs].to(self.device), self.is_tf_model,
             logger=self.logger)
         
+        first_iter = 0
+
         with torch.no_grad():
             # calculate accuracy
             n_batches = int(np.ceil(x_orig.shape[0] / bs))
@@ -183,6 +185,13 @@ class AutoAttack():
                     non_robust_lin_idcs = batch_datapoint_idcs[false_batch]
                     robust_flags[non_robust_lin_idcs] = False
 
+
+                    if first_iter == 0:
+                        first_iter = -1
+
+                        max_nr = round(initial_accuracy * x_orig.shape[0])
+
+
                     x_adv[non_robust_lin_idcs] = adv_curr[false_batch].detach().to(x_adv.device)
                     y_adv[non_robust_lin_idcs] = output[false_batch].detach().to(x_adv.device)
 
@@ -191,6 +200,9 @@ class AutoAttack():
                         self.logger.log('{} - {}/{} - {} out of {} successfully perturbed'.format(
                             attack, batch_idx + 1, n_batches, num_non_robust_batch, x.shape[0]))
                 
+                # import pdb; pdb.set_trace()
+                max_nr = round(initial_accuracy * x_orig.shape[0])
+
                 robust_accuracy = torch.sum(robust_flags).item() / x_orig.shape[0]
                 robust_accuracy_dict[attack] = robust_accuracy
                 if self.verbose:
@@ -212,9 +224,9 @@ class AutoAttack():
                     self.norm, res.max(), (x_adv != x_adv).sum(), x_adv.max(), x_adv.min()))
                 self.logger.log('robust accuracy: {:.2%}'.format(robust_accuracy))
         if return_labels:
-            return x_adv, y_adv
+            return x_adv, y_adv, max_nr
         else:
-            return x_adv
+            return x_adv, max_nr
         
     def clean_accuracy(self, x_orig, y_orig, bs=250):
         n_batches = math.ceil(x_orig.shape[0] / bs)
