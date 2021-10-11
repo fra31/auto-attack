@@ -227,7 +227,8 @@ class AutoAttack():
             return x_adv, y_adv, max_nr
         else:
             return x_adv, max_nr
-        
+
+ 
     def clean_accuracy(self, x_orig, y_orig, bs=250):
         n_batches = math.ceil(x_orig.shape[0] / bs)
         acc = 0.
