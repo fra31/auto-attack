@@ -83,10 +83,12 @@ class AutoAttack():
         if self.version != 'rand':
             checks.check_randomized(self.get_logits, x_orig[:bs].to(self.device),
                 y_orig[:bs].to(self.device), bs=bs, logger=self.logger)
-        checks.check_range_output(self.get_logits, x_orig[:bs].to(self.device),
+        n_cls = checks.check_range_output(self.get_logits, x_orig[:bs].to(self.device),
             logger=self.logger)
         checks.check_dynamic(self.model, x_orig[:bs].to(self.device), self.is_tf_model,
             logger=self.logger)
+        checks.check_n_classes(n_cls, self.attacks_to_run, self.apgd_targeted.n_target_classes,
+            self.fab.n_target_classes, logger=self.logger)
         
         with torch.no_grad():
             # calculate accuracy
