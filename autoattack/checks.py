@@ -54,6 +54,7 @@ def check_range_output(model, x, alpha=1e-5, logger=None):
             warnings.warn(Warning(msg))
         else:
             logger.log(f'Warning: {msg}')
+    return output.shape[-1]
 
 
 def check_zero_gradients(grad, logger=None):
@@ -111,4 +112,31 @@ def check_dynamic(model, x, is_tf_model=False, logger=None):
         else:
             logger.log(f'Warning: {msg}')
     #sys.settrace(None)
+
+
+def check_n_classes(n_cls, attacks_to_run, apgd_targets, fab_targets,
+    logger=None):
+    msg = None
+    if 'apgd-dlr' in attacks_to_run or 'apgd-t' in attacks_to_run:
+        if n_cls <= 2:
+            msg = f'with only {n_cls} classes it is not possible to use the DLR loss!'
+        elif n_cls == 3:
+            msg = f'with only {n_cls} classes it is not possible to use the targeted DLR loss!'
+        elif 'apgd-t' in attacks_to_run and \
+            apgd_targets + 1 > n_cls:
+            msg = f'it seems that more target classes ({apgd_targets})' + \
+                f' than possible ({n_cls - 1}) are used in {"apgd-t".upper()}!'
+    if 'fab-t' in attacks_to_run and fab_targets + 1 > n_cls:
+        if msg is None:
+            msg = f'it seems that more target classes ({apgd_targets})' + \
+                f' than possible ({n_cls - 1}) are used in FAB-T!'
+        else:
+            msg += f' Also, it seems that too many target classes ({apgd_targets})' + \
+                f' are used in {"fab-t".upper()} ({n_cls - 1} possible)!'
+    if not msg is None:
+        if logger is None:
+            warnings.warn(Warning(msg))
+        else:
+            logger.log(f'Warning: {msg}')
+
 
