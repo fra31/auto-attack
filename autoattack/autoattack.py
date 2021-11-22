@@ -23,6 +23,9 @@ class AutoAttack():
         self.is_tf_model = is_tf_model
         self.device = device
         self.logger = Logger(log_path)
+
+        if version in ['standard', 'plus', 'rand'] and attacks_to_run != []:
+            raise ValueError("attacks_to_run will be overridden unless you use version='custom'")
         
         if not self.is_tf_model:
             from .autopgd_base import APGDAttack
