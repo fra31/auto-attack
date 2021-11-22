@@ -24,7 +24,7 @@ class AutoAttack():
         self.device = device
         self.logger = Logger(log_path)
 
-        if version != "custom" and attacks_to_run != []:
+        if version in ['standard', 'plus', 'rand'] and attacks_to_run != []:
             raise ValueError("attacks_to_run will be overridden unless you use version='custom'")
         
         if not self.is_tf_model:
