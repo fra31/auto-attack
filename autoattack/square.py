@@ -232,6 +232,9 @@ class SquareAttack():
                 n_queries = torch.ones(x.shape[0]).to(self.device)
                 s_init = int(math.sqrt(self.p_init * n_features / c))
                 
+                if (margin_min < 0.0).all():
+                    return n_queries, x_best
+                
                 for i_iter in range(self.n_queries):
                     idx_to_fool = (margin_min > 0.0).nonzero().squeeze()
                     
@@ -312,6 +315,9 @@ class SquareAttack():
                 margin_min, loss_min = self.margin_and_loss(x_best, y)
                 n_queries = torch.ones(x.shape[0]).to(self.device)
                 s_init = int(math.sqrt(self.p_init * n_features / c))
+                
+                if (margin_min < 0.0).all():
+                    return n_queries, x_best
 
                 for i_iter in range(self.n_queries):
                     idx_to_fool = (margin_min > 0.0).nonzero().squeeze()
@@ -427,6 +433,9 @@ class SquareAttack():
                 margin_min, loss_min = self.margin_and_loss(x_best, y)
                 n_queries = torch.ones(x.shape[0]).to(self.device)
                 s_init = int(math.sqrt(self.p_init * n_features / c))
+                
+                if (margin_min < 0.0).all():
+                    return n_queries, x_best
 
                 for i_iter in range(self.n_queries):
                     idx_to_fool = (margin_min > 0.0).nonzero().squeeze()

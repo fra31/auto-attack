@@ -167,7 +167,7 @@ adversary = AutoAttack(forward_pass, norm='Linf', eps=epsilon, version='standard
 
 where:
 + `forward_pass` returns the logits and takes input with components in [0, 1] (NCHW format expected),
-+ `norm = ['Linf' | 'L2']` is the norm of the threat model,
++ `norm = ['Linf' | 'L2' | 'L1']` is the norm of the threat model,
 + `eps` is the bound on the norm of the adversarial perturbations,
 + `version = 'standard'` uses the standard version of AA.
 
@@ -266,5 +266,14 @@ To log the intermediate results of the evaluation specify `log_path=/path/to/log
     author = {Francesco Croce and Matthias Hein},
     booktitle = {ICML},
     year = {2020}
+}
+```
+
+```
+@inproceedings{croce2021mind,
+    title={Mind the box: $l_1$-APGD for sparse adversarial attacks on image classifiers}, 
+    author={Francesco Croce and Matthias Hein},
+    booktitle={ICML},
+    year={2021}
 }
 ```
