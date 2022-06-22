@@ -58,7 +58,7 @@ class FABAttack():
         self.alpha_max = alpha_max
         self.eta = eta
         self.beta = beta
-        self.targeted = False
+        self.targeted = targeted
         self.verbose = verbose
         self.seed = seed
         self.target_class = None
