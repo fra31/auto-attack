@@ -145,10 +145,16 @@ class APGDAttack():
         self.is_tf_model = is_tf_model
         self.y_target = None
         self.logger = logger
-    
-    def init_hyperparam(self, x):
+
         assert self.norm in ['Linf', 'L2', 'L1']
         assert not self.eps is None
+
+        ### set parameters for checkpoints
+        self.n_iter_2 = max(int(0.22 * self.n_iter), 1)
+        self.n_iter_min = max(int(0.06 * self.n_iter), 1)
+        self.size_decr = max(int(0.03 * self.n_iter), 1)
+
+    def init_hyperparam(self, x):
 
         if self.device is None:
             self.device = x.device
@@ -156,16 +162,7 @@ class APGDAttack():
         self.ndims = len(self.orig_dim)
         if self.seed is None:
             self.seed = time.time()
-        
-        
-        
-        
-        
-        ### set parameters for checkpoints
-        self.n_iter_2 = max(int(0.22 * self.n_iter), 1)
-        self.n_iter_min = max(int(0.06 * self.n_iter), 1)
-        self.size_decr = max(int(0.03 * self.n_iter), 1)
-    
+
     def check_oscillation(self, x, j, k, y5, k3=0.75):
         t = torch.zeros(x.shape[1]).to(self.device)
         for counter5 in range(k):
