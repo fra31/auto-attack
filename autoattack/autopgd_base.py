@@ -191,11 +191,6 @@ class APGDAttack():
             except:
                 t = x.abs().reshape([x.shape[0], -1]).sum(dim=-1)
             return x / (t.view(-1, *([1] * self.ndims)) + 1e-12)
-    
-    def lp_norm(self, x):
-        if self.norm == 'L2':
-            t = (x ** 2).view(x.shape[0], -1).sum(-1).sqrt()
-            return t.view(-1, *([1] * self.ndims))
 
     def dlr_loss(self, x, y):
         x_sorted, ind_sorted = x.sort(dim=1)
@@ -347,11 +342,11 @@ class APGDAttack():
                     x_adv_1 = x_adv + step_size * self.normalize(grad)
                     x_adv_1 = torch.clamp(x + self.normalize(x_adv_1 - x
                         ) * torch.min(self.eps * torch.ones_like(x).detach(),
-                        self.lp_norm(x_adv_1 - x)), 0.0, 1.0)
+                        L2_norm(x_adv_1 - x, keepdim=True)), 0.0, 1.0)
                     x_adv_1 = x_adv + (x_adv_1 - x_adv) * a + grad2 * (1 - a)
                     x_adv_1 = torch.clamp(x + self.normalize(x_adv_1 - x
                         ) * torch.min(self.eps * torch.ones_like(x).detach(),
-                        self.lp_norm(x_adv_1 - x)), 0.0, 1.0)
+                        L2_norm(x_adv_1 - x, keepdim=True)), 0.0, 1.0)
 
                 elif self.norm == 'L1':
                     grad_topk = grad.abs().view(x.shape[0], -1).sort(-1)[0]
@@ -359,8 +354,7 @@ class APGDAttack():
                     grad_topk = grad_topk[u, topk_curr].view(-1, *[1]*(len(x.shape) - 1))
                     sparsegrad = grad * (grad.abs() >= grad_topk).float()
                     x_adv_1 = x_adv + step_size * sparsegrad.sign() / (
-                        sparsegrad.sign().abs().view(x.shape[0], -1).sum(dim=-1).view(
-                        -1, *[1]*(len(x.shape) - 1)) + 1e-10)
+                        L1_norm(sparsegrad.sign(), keepdim=True) + 1e-10)
                     
                     delta_u = x_adv_1 - x
                     delta_p = L1_projection(x, delta_u, self.eps)
