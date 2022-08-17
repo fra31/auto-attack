@@ -176,18 +176,17 @@ class APGDAttack():
     def normalize(self, x):
         if self.norm == 'Linf':
             t = x.abs().view(x.shape[0], -1).max(1)[0]
-            return x / (t.view(-1, *([1] * self.ndims)) + 1e-12)
 
         elif self.norm == 'L2':
             t = (x ** 2).view(x.shape[0], -1).sum(-1).sqrt()
-            return x / (t.view(-1, *([1] * self.ndims)) + 1e-12)
 
         elif self.norm == 'L1':
             try:
                 t = x.abs().view(x.shape[0], -1).sum(dim=-1)
             except:
                 t = x.abs().reshape([x.shape[0], -1]).sum(dim=-1)
-            return x / (t.view(-1, *([1] * self.ndims)) + 1e-12)
+
+        return x / (t.view(-1, *([1] * self.ndims)) + 1e-12)
 
     def dlr_loss(self, x, y):
         x_sorted, ind_sorted = x.sort(dim=1)
