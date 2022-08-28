@@ -97,15 +97,15 @@ def check_dynamic(model, x, is_tf_model=False, logger=None):
         msg = 'the check for dynamic defenses is not currently supported'
     else:
         msg = None
-    sys.settrace(tracefunc)
-    model(x)
-    sys.settrace(None)
-    #for k, v in funcs.items():
-    #    print(k, v)
-    if any([c > 0 for c in funcs.values()]):
-        msg = 'it seems to be a dynamic defense! The evaluation' + \
-            ' with AutoAttack might be insufficient.' + \
-            f' See {checks_doc_path} for details.'
+        sys.settrace(tracefunc)
+        model(x)
+        sys.settrace(None)
+        #for k, v in funcs.items():
+        #    print(k, v)
+        if any([c > 0 for c in funcs.values()]):
+            msg = 'it seems to be a dynamic defense! The evaluation' + \
+                ' with AutoAttack might be insufficient.' + \
+                f' See {checks_doc_path} for details.'
     if not msg is None:
         if logger is None:
             warnings.warn(Warning(msg))
