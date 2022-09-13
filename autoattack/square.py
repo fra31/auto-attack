@@ -253,6 +253,7 @@ class SquareAttack():
                     
                     p = self.p_selection(i_iter)
                     s = max(int(round(math.sqrt(p * n_features / c))), 1)
+                    s = min(s, min(h, w))
                     vh = self.random_int(0, h - s)
                     vw = self.random_int(0, w - s)
                     new_deltas = torch.zeros([c, h, w]).to(self.device)
@@ -340,6 +341,7 @@ class SquareAttack():
                     s = max(int(round(math.sqrt(p * n_features / c))), 3)
                     if s % 2 == 0:
                         s += 1
+                    s = min(s, min(h, w))
 
                     vh = self.random_int(0, h - s)
                     vw = self.random_int(0, w - s)
@@ -459,6 +461,7 @@ class SquareAttack():
                     if s % 2 == 0:
                         s += 1
                         #pass
+                    s = min(s, min(h, w))
                     
                     vh = self.random_int(0, h - s)
                     vw = self.random_int(0, w - s)
