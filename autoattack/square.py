@@ -224,6 +224,11 @@ class SquareAttack():
             c, h, w = x.shape[1:]
             n_features = c * h * w
             n_ex_total = x.shape[0]
+
+            if self.verbose and h != w:
+                print('square attack may not work properly for non-square image.')
+                print('for details please refer to https://github.com/fra31/auto-attack/issues/95')
+
             
             if self.norm == 'Linf':
                 x_best = torch.clamp(x + self.eps * self.random_choice(
@@ -248,6 +253,7 @@ class SquareAttack():
                     
                     p = self.p_selection(i_iter)
                     s = max(int(round(math.sqrt(p * n_features / c))), 1)
+                    s = min(s, min(h, w))
                     vh = self.random_int(0, h - s)
                     vw = self.random_int(0, w - s)
                     new_deltas = torch.zeros([c, h, w]).to(self.device)
@@ -335,6 +341,7 @@ class SquareAttack():
                     s = max(int(round(math.sqrt(p * n_features / c))), 3)
                     if s % 2 == 0:
                         s += 1
+                    s = min(s, min(h, w))
 
                     vh = self.random_int(0, h - s)
                     vw = self.random_int(0, w - s)
@@ -454,6 +461,7 @@ class SquareAttack():
                     if s % 2 == 0:
                         s += 1
                         #pass
+                    s = min(s, min(h, w))
                     
                     vh = self.random_int(0, h - s)
                     vw = self.random_int(0, w - s)
