@@ -6,6 +6,7 @@ import torch
 
 from .other_utils import Logger
 from autoattack import checks
+from autoattack.state import EvaluationState
 
 
 class AutoAttack():
@@ -77,10 +78,16 @@ class AutoAttack():
     def get_seed(self):
         return time.time() if self.seed is None else self.seed
     
-    def run_standard_evaluation(self, x_orig, y_orig, bs=250, return_labels=False):
+    def run_standard_evaluation(self,
+                                x_orig,
+                                y_orig,
+                                bs=250,
+                                return_labels=False,
+                                state=EvaluationState()):
+        attacks_to_run = filter(lambda at: at not in state.ran_attacks, self.attacks_to_run)
         if self.verbose:
-            print('using {} version including {}'.format(self.version,
-                ', '.join(self.attacks_to_run)))
+            print('using {} version including {}. {} were already run.'.format(self.version,
+                  ', '.join(attacks_to_run), ', '.join(state.ran_attacks)))
         
         # checks on type of defense
         if self.version != 'rand':
@@ -96,18 +103,23 @@ class AutoAttack():
         with torch.no_grad():
             # calculate accuracy
             n_batches = int(np.ceil(x_orig.shape[0] / bs))
-            robust_flags = torch.zeros(x_orig.shape[0], dtype=torch.bool, device=x_orig.device)
-            y_adv = torch.empty_like(y_orig)
-            for batch_idx in range(n_batches):
-                start_idx = batch_idx * bs
-                end_idx = min( (batch_idx + 1) * bs, x_orig.shape[0])
+            if state.robust_flags is None:
+                robust_flags = torch.zeros(x_orig.shape[0], dtype=torch.bool, device=x_orig.device)
+                y_adv = torch.empty_like(y_orig)
+                for batch_idx in range(n_batches):
+                    start_idx = batch_idx * bs
+                    end_idx = min( (batch_idx + 1) * bs, x_orig.shape[0])
 
-                x = x_orig[start_idx:end_idx, :].clone().to(self.device)
-                y = y_orig[start_idx:end_idx].clone().to(self.device)
-                output = self.get_logits(x).max(dim=1)[1]
-                y_adv[start_idx: end_idx] = output
-                correct_batch = y.eq(output)
-                robust_flags[start_idx:end_idx] = correct_batch.detach().to(robust_flags.device)
+                    x = x_orig[start_idx:end_idx, :].clone().to(self.device)
+                    y = y_orig[start_idx:end_idx].clone().to(self.device)
+                    output = self.get_logits(x).max(dim=1)[1]
+                    y_adv[start_idx: end_idx] = output
+                    correct_batch = y.eq(output)
+                    robust_flags[start_idx:end_idx] = correct_batch.detach().to(robust_flags.device)
+
+                state.robust_flags = robust_flags
+            else:
+                robust_flags = state.robust_flags.to(self.device)
 
             robust_accuracy = torch.sum(robust_flags).item() / x_orig.shape[0]
             robust_accuracy_dict = {'clean': robust_accuracy}
@@ -117,7 +129,7 @@ class AutoAttack():
                     
             x_adv = x_orig.clone().detach()
             startt = time.time()
-            for attack in self.attacks_to_run:
+            for attack in attacks_to_run:
                 # item() is super important as pytorch int division uses floor rounding
                 num_robust = torch.sum(robust_flags).item()
 
@@ -187,6 +199,7 @@ class AutoAttack():
                     false_batch = ~y.eq(output).to(robust_flags.device)
                     non_robust_lin_idcs = batch_datapoint_idcs[false_batch]
                     robust_flags[non_robust_lin_idcs] = False
+                    state.robust_flags = robust_flags
 
                     x_adv[non_robust_lin_idcs] = adv_curr[false_batch].detach().to(x_adv.device)
                     y_adv[non_robust_lin_idcs] = output[false_batch].detach().to(x_adv.device)
@@ -198,6 +211,7 @@ class AutoAttack():
                 
                 robust_accuracy = torch.sum(robust_flags).item() / x_orig.shape[0]
                 robust_accuracy_dict[attack] = robust_accuracy
+                state.add_ran_attack(attack)
                 if self.verbose:
                     self.logger.log('robust accuracy after {}: {:.2%} (total time {:.1f} s)'.format(
                         attack.upper(), robust_accuracy, time.time() - startt))
