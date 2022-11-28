@@ -94,12 +94,12 @@ class AutoAttack():
             if self.verbose and state_path is not None:
                 print("Created state in {}".format(state_path))
 
-        attacks_to_run = list(filter(lambda attack: attack not in state.ran_attacks, self.attacks_to_run))
+        attacks_to_run = list(filter(lambda attack: attack not in state.run_attacks, self.attacks_to_run))
         if self.verbose:
             print('using {} version including {}.'.format(self.version,
                   ', '.join(attacks_to_run)))
-            if state.ran_attacks:
-                print('{} was/were already run.'.format(', '.join(state.ran_attacks)))
+            if state.run_attacks:
+                print('{} was/were already run.'.format(', '.join(state.run_attacks)))
 
         # checks on type of defense
         if self.version != 'rand':
@@ -228,13 +228,14 @@ class AutoAttack():
                 
                 robust_accuracy = torch.sum(robust_flags).item() / x_orig.shape[0]
                 robust_accuracy_dict[attack] = robust_accuracy
-                state.add_ran_attack(attack)
+                state.add_run_attack(attack)
                 if self.verbose:
                     self.logger.log('robust accuracy after {}: {:.2%} (total time {:.1f} s)'.format(
                         attack.upper(), robust_accuracy, time.time() - startt))
                     
             # check about square
             checks.check_square_sr(robust_accuracy_dict, logger=self.logger)
+            state.to_disk(force=True)
             
             # final check
             if self.verbose:

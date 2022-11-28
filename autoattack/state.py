@@ -11,7 +11,7 @@ import torch
 @dataclass
 class EvaluationState:
     path: Optional[Path] = None
-    _ran_attacks: Set[str] = field(default_factory=set)
+    _run_attacks: Set[str] = field(default_factory=set)
     _robust_flags: Optional[torch.Tensor] = None
     _last_saved: datetime = datetime(1, 1, 1)
     _SAVE_TIMEOUT: int = 60
@@ -23,10 +23,11 @@ class EvaluationState:
         if self.path is None or (seconds_since_last_save < self._SAVE_TIMEOUT
                                  and not force):
             return
+        self._last_saved = datetime.now()
         d = asdict(self)
         if self.robust_flags is not None:
             d["_robust_flags"] = d["_robust_flags"].cpu().tolist()
-        d["_ran_attacks"] = list(self._ran_attacks)
+        d["_run_attacks"] = list(self._run_attacks)
         with self.path.open("w", ) as f:
             json.dump(d, f, default=str)
 
@@ -35,7 +36,8 @@ class EvaluationState:
         with path.open("r") as f:
             d = json.load(f)
         d["_robust_flags"] = torch.tensor(d["_robust_flags"], dtype=torch.bool)
-        if path != Path(d["path"]):
+        d["path"] = Path(d["path"])
+        if path != d["path"]:
             warnings.warn(
                 UserWarning(
                     "The given path is different from the one found in the state file."
@@ -53,11 +55,11 @@ class EvaluationState:
         self.to_disk(force=True)
 
     @property
-    def ran_attacks(self) -> Set[str]:
-        return self._ran_attacks
+    def run_attacks(self) -> Set[str]:
+        return self._run_attacks
 
-    def add_ran_attack(self, attack: str) -> None:
-        self._ran_attacks.add(attack)
+    def add_run_attack(self, attack: str) -> None:
+        self._run_attacks.add(attack)
         self.to_disk()
 
     @property
