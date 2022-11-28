@@ -1,5 +1,7 @@
 import os
 import argparse
+from pathlib import Path
+
 import torch
 import torch.nn as nn
 import torchvision.datasets as datasets
@@ -23,6 +25,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=500)
     parser.add_argument('--log_path', type=str, default='./log_file.txt')
     parser.add_argument('--version', type=str, default='standard')
+    parser.add_argument('--state-path', type=Path, default=None)
     
     args = parser.parse_args()
 
@@ -63,7 +66,7 @@ if __name__ == '__main__':
     with torch.no_grad():
         if not args.individual:
             adv_complete = adversary.run_standard_evaluation(x_test[:args.n_ex], y_test[:args.n_ex],
-                bs=args.batch_size)
+                bs=args.batch_size, state_path=args.state_path)
             
             torch.save({'adv_complete': adv_complete}, '{}/{}_{}_1_{}_eps_{:.5f}.pth'.format(
                 args.save_dir, 'aa', args.version, adv_complete.shape[0], args.epsilon))

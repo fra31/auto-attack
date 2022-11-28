@@ -83,12 +83,24 @@ class AutoAttack():
                                 y_orig,
                                 bs=250,
                                 return_labels=False,
-                                state=EvaluationState()):
-        attacks_to_run = filter(lambda at: at not in state.ran_attacks, self.attacks_to_run)
+                                state_path=None):
+        if state_path is not None and state_path.exists():
+            state = EvaluationState.from_disk(state_path)
+            if self.verbose:
+                print("Restored state from {}".format(state_path))
+        else:
+            state = EvaluationState(path=state_path)
+            state.to_disk()
+            if self.verbose and state_path is not None:
+                print("Created state in {}".format(state_path))
+
+        attacks_to_run = list(filter(lambda attack: attack not in state.ran_attacks, self.attacks_to_run))
         if self.verbose:
-            print('using {} version including {}. {} were already run.'.format(self.version,
-                  ', '.join(attacks_to_run), ', '.join(state.ran_attacks)))
-        
+            print('using {} version including {}.'.format(self.version,
+                  ', '.join(attacks_to_run)))
+            if state.ran_attacks:
+                print('{} was/were already run.'.format(', '.join(state.ran_attacks)))
+
         # checks on type of defense
         if self.version != 'rand':
             checks.check_randomized(self.get_logits, x_orig[:bs].to(self.device),
@@ -118,14 +130,19 @@ class AutoAttack():
                     robust_flags[start_idx:end_idx] = correct_batch.detach().to(robust_flags.device)
 
                 state.robust_flags = robust_flags
+                robust_accuracy = torch.sum(robust_flags).item() / x_orig.shape[0]
+                robust_accuracy_dict = {'clean': robust_accuracy}
+                state.clean_accuracy = robust_accuracy
+                
+                if self.verbose:
+                    self.logger.log('initial accuracy: {:.2%}'.format(robust_accuracy))
             else:
-                robust_flags = state.robust_flags.to(self.device)
-
-            robust_accuracy = torch.sum(robust_flags).item() / x_orig.shape[0]
-            robust_accuracy_dict = {'clean': robust_accuracy}
-            
-            if self.verbose:
-                self.logger.log('initial accuracy: {:.2%}'.format(robust_accuracy))
+                robust_flags = state.robust_flags.to(x_orig.device)
+                robust_accuracy = torch.sum(robust_flags).item() / x_orig.shape[0]
+                robust_accuracy_dict = {'clean': state.clean_accuracy}
+                if self.verbose:
+                    self.logger.log('initial clean accuracy: {:.2%}'.format(state.clean_accuracy))
+                    self.logger.log('robust accuracy at the time of restoring the state: {:.2%}'.format(robust_accuracy))
                     
             x_adv = x_orig.clone().detach()
             startt = time.time()
