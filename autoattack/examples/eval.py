@@ -1,6 +1,7 @@
 import os
 import argparse
 from pathlib import Path
+import warnings
 
 import torch
 import torch.nn as nn
@@ -68,6 +69,11 @@ if __name__ == '__main__':
             adv_complete = adversary.run_standard_evaluation(x_test[:args.n_ex], y_test[:args.n_ex],
                 bs=args.batch_size, state_path=args.state_path)
             
+            if args.state_path is not None:
+                warnings.warn(Warning("Since a state path is provided, "
+                                      "the saved adversarial examples are "
+                                      "those obtained in the latest run of the attack."))
+
             torch.save({'adv_complete': adv_complete}, '{}/{}_{}_1_{}_eps_{:.5f}.pth'.format(
                 args.save_dir, 'aa', args.version, adv_complete.shape[0], args.epsilon))
 
@@ -75,6 +81,11 @@ if __name__ == '__main__':
             # individual version, each attack is run on all test points
             adv_complete = adversary.run_standard_evaluation_individual(x_test[:args.n_ex],
                 y_test[:args.n_ex], bs=args.batch_size)
+            
+            if args.state_path is not None:
+                warnings.warn(Warning("Since a state path is provided, "
+                                      "the saved adversarial examples are "
+                                      "those obtained in the latest run of the attack."))
             
             torch.save(adv_complete, '{}/{}_{}_individual_1_{}_eps_{:.5f}_plus_{}_cheap_{}.pth'.format(
                 args.save_dir, 'aa', args.version, args.n_ex, args.epsilon))
