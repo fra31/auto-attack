@@ -10,6 +10,7 @@ import torch
 
 @dataclass
 class EvaluationState:
+    _attacks_to_run: Set[str]
     path: Optional[Path] = None
     _run_attacks: Set[str] = field(default_factory=set)
     _robust_flags: Optional[torch.Tensor] = None
@@ -61,6 +62,14 @@ class EvaluationState:
     def add_run_attack(self, attack: str) -> None:
         self._run_attacks.add(attack)
         self.to_disk()
+        
+    @property
+    def attacks_to_run(self) -> Set[str]:
+        return self._attacks_to_run
+    
+    @attacks_to_run.setter
+    def attacks_to_run(self, _: Set[str]) -> None:
+        raise ValueError("attacks_to_run cannot be set outside of the constructor")
 
     @property
     def clean_accuracy(self) -> float:
@@ -70,3 +79,12 @@ class EvaluationState:
     def clean_accuracy(self, accuracy) -> None:
         self._clean_accuracy = accuracy
         self.to_disk(force=True)
+
+    @property
+    def robust_accuracy(self) -> float:
+        if self.robust_flags is None:
+            raise ValueError("robust_flags is not set yet. Start the attack first.")
+        if self.attacks_to_run - self.run_attacks:
+            warnings.warn("You are checking `robust_accuracy` before all the attacks"
+                          " have been run.")
+        return self.robust_flags.float().mean().item()
