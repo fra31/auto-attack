@@ -87,19 +87,22 @@ class AutoAttack():
         if state_path is not None and state_path.exists():
             state = EvaluationState.from_disk(state_path)
             if self.verbose:
-                print("Restored state from {}".format(state_path))
+                self.logger.log("Restored state from {}".format(state_path))
+                self.logger.log("Since the state has been restored, **only** "
+                                "the adversarial examples from the current run "
+                                "are going to be returned.")
         else:
             state = EvaluationState(path=state_path)
             state.to_disk()
             if self.verbose and state_path is not None:
-                print("Created state in {}".format(state_path))
+                self.logger.log("Created state in {}".format(state_path))                                
 
         attacks_to_run = list(filter(lambda attack: attack not in state.run_attacks, self.attacks_to_run))
         if self.verbose:
-            print('using {} version including {}.'.format(self.version,
+            self.logger.log('using {} version including {}.'.format(self.version,
                   ', '.join(attacks_to_run)))
             if state.run_attacks:
-                print('{} was/were already run.'.format(', '.join(state.run_attacks)))
+                self.logger.log('{} was/were already run.'.format(', '.join(state.run_attacks)))
 
         # checks on type of defense
         if self.version != 'rand':
