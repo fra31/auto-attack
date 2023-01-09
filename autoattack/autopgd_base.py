@@ -296,9 +296,9 @@ class APGDAttack():
         x_adv_old = x_adv.clone()
         counter = 0
         k = self.n_iter_2 + 0
+        n_fts = math.prod(self.orig_dim)
         if self.norm == 'L1':
             k = max(int(.04 * self.n_iter), 1)
-            n_fts = math.prod(self.orig_dim)
             if x_init is None:
                 topk = .2 * torch.ones([x.shape[0]], device=self.device)
                 sp_old =  n_fts * torch.ones_like(topk)
@@ -315,7 +315,6 @@ class APGDAttack():
         reduced_last_check = torch.ones_like(loss_best)
         n_reduced = 0
 
-        n_fts = x.shape[-3] * x.shape[-2] * x.shape[-1]        
         u = torch.arange(x.shape[0], device=self.device)
         for i in range(self.n_iter):
             ### gradient step
