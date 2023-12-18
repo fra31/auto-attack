@@ -122,19 +122,22 @@ class AutoAttack():
             # calculate accuracy
             n_batches = int(np.ceil(x_orig.shape[0] / bs))
             if state.robust_flags is None:
-                robust_flags = torch.zeros(x_orig.shape[0], dtype=torch.bool, device=x_orig.device)
+                #robust_flags = torch.zeros(x_orig.shape[0], dtype=torch.bool, device=x_orig.device)
+                robust_flags = torch.zeros(x_orig.shape[0], device=x_orig.device)
                 y_adv = torch.empty_like(y_orig)
                 for batch_idx in range(n_batches):
-                    start_idx = batch_idx * bs
-                    end_idx = min( (batch_idx + 1) * bs, x_orig.shape[0])
+                    for eot_iter in range(self.apgd.eot_iter):
+                        start_idx = batch_idx * bs
+                        end_idx = min( (batch_idx + 1) * bs, x_orig.shape[0])
 
-                    x = x_orig[start_idx:end_idx, :].clone().to(self.device)
-                    y = y_orig[start_idx:end_idx].clone().to(self.device)
-                    output = self.get_logits(x).max(dim=1)[1]
-                    y_adv[start_idx: end_idx] = output
-                    correct_batch = y.eq(output)
-                    robust_flags[start_idx:end_idx] = correct_batch.detach().to(robust_flags.device)
-
+                        x = x_orig[start_idx:end_idx, :].clone().to(self.device)
+                        y = y_orig[start_idx:end_idx].clone().to(self.device)
+                        output = self.get_logits(x).max(dim=1)[1]
+                        y_adv[start_idx: end_idx] = output
+                        correct_batch = y.eq(output)
+                        robust_flags[start_idx:end_idx] = correct_batch.detach().to(robust_flags.device)
+                        
+                robust_flags /= self.apgd.eot_iter
                 state.robust_flags = robust_flags
                 robust_accuracy = torch.sum(robust_flags).item() / x_orig.shape[0]
                 robust_accuracy_dict = {'clean': robust_accuracy}
@@ -154,7 +157,8 @@ class AutoAttack():
             startt = time.time()
             for attack in attacks_to_run:
                 # item() is super important as pytorch int division uses floor rounding
-                num_robust = torch.sum(robust_flags).item()
+                #num_robust = torch.sum(robust_flags).item()
+                num_robust = torch.sum(robust_flags != 0).item()
 
                 if num_robust == 0:
                     break
@@ -218,17 +222,31 @@ class AutoAttack():
                     else:
                         raise ValueError('Attack not supported')
                 
-                    output = self.get_logits(adv_curr).max(dim=1)[1]
-                    false_batch = ~y.eq(output).to(robust_flags.device)
-                    non_robust_lin_idcs = batch_datapoint_idcs[false_batch]
-                    robust_flags[non_robust_lin_idcs] = False
-                    state.robust_flags = robust_flags
+                    # output = self.get_logits(adv_curr).max(dim=1)[1]
+                    # false_batch = ~y.eq(output).to(robust_flags.device)
+                    # non_robust_lin_idcs = batch_datapoint_idcs[false_batch]
+                    # robust_flags[non_robust_lin_idcs] = False
+                    # state.robust_flags = robust_flags
 
-                    x_adv[non_robust_lin_idcs] = adv_curr[false_batch].detach().to(x_adv.device)
-                    y_adv[non_robust_lin_idcs] = output[false_batch].detach().to(x_adv.device)
+                    # x_adv[non_robust_lin_idcs] = adv_curr[false_batch].detach().to(x_adv.device)
+                    # y_adv[non_robust_lin_idcs] = output[false_batch].detach().to(x_adv.device)
+                    
+                    correct_batch = torch.zeros_like(y)
+                    for eot_iter in range(self.apgd.eot_iter):
+                        output = self.get_logits(adv_curr).max(dim=1)[1]
+                        correct_batch += y.eq(output).to(robust_flags.device)
+                    
+                    correct_batch = correct_batch / self.apgd.eot_iter
+                    
+                    smaller_indices = correct_batch < robust_flags[batch_datapoint_idcs]
+                    robust_flags[batch_datapoint_idcs[smaller_indices]] = correct_batch[smaller_indices]
+                    x_adv[batch_datapoint_idcs[smaller_indices]] = adv_curr[smaller_indices].detach().to(x_adv.device)
+                    y_adv[batch_datapoint_idcs[smaller_indices]] = output[smaller_indices].detach().to(x_adv.device)
+                    
 
                     if self.verbose:
-                        num_non_robust_batch = torch.sum(false_batch)    
+                        #num_non_robust_batch = torch.sum(false_batch)    
+                        num_non_robust_batch = torch.sum(1 - correct_batch) 
                         self.logger.log('{} - {}/{} - {} out of {} successfully perturbed'.format(
                             attack, batch_idx + 1, n_batches, num_non_robust_batch, x.shape[0]))
                 
