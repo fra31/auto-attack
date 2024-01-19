@@ -137,12 +137,13 @@ class AutoAttack():
                 robust_flags = torch.zeros(x_orig.shape[0], device=x_orig.device)
                 y_adv = torch.empty_like(y_orig)
                 for batch_idx in range(n_batches):
-                    for _ in range(self.eval_iter):
-                        start_idx = batch_idx * bs
-                        end_idx = min( (batch_idx + 1) * bs, x_orig.shape[0])
+                    start_idx = batch_idx * bs
+                    end_idx = min((batch_idx + 1) * bs, x_orig.shape[0])
 
-                        x = x_orig[start_idx:end_idx, :].clone().to(self.device)
-                        y = y_orig[start_idx:end_idx].clone().to(self.device)
+                    x = x_orig[start_idx:end_idx, :].clone().to(self.device)
+                    y = y_orig[start_idx:end_idx].clone().to(self.device)
+
+                    for _ in range(self.eval_iter):
                         output = self.get_logits(x).max(dim=1)[1]
                         y_adv[start_idx: end_idx] = output
                         correct_batch = y.eq(output)
