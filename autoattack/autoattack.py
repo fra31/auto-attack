@@ -11,7 +11,7 @@ from autoattack.state import EvaluationState
 
 class AutoAttack():
     def __init__(self, model, norm='Linf', eps=.3, seed=None, verbose=True,
-                 attacks_to_run=[], version='standard', is_tf_model=False,
+                 attacks_to_run=[], version='standard', eval_iter = None, is_tf_model=False,
                  device='cuda', log_path=None):
         self.model = model
         self.norm = norm
@@ -21,6 +21,7 @@ class AutoAttack():
         self.verbose = verbose
         self.attacks_to_run = attacks_to_run
         self.version = version
+        self.eval_iter = eval_iter
         self.is_tf_model = is_tf_model
         self.device = device
         self.logger = Logger(log_path)
@@ -108,9 +109,19 @@ class AutoAttack():
                 self.logger.log('{} was/were already run.'.format(', '.join(state.run_attacks)))
 
         # checks on type of defense
+        is_randomized_defense = True
         if self.version != 'rand':
-            checks.check_randomized(self.get_logits, x_orig[:bs].to(self.device),
+            is_randomized_defense = checks.is_randomized(self.get_logits, x_orig[:bs].to(self.device),
                 y_orig[:bs].to(self.device), bs=bs, logger=self.logger)
+
+        if self.eval_iter is None:
+            if is_randomized_defense:
+                self.logger.log("random defense, using default eval_iter 20")
+                self.eval_iter = 20
+            else:
+                self.logger.log("non-random defense, using default eval_iter 1")
+                self.eval_iter = 1
+
         n_cls = checks.check_range_output(self.get_logits, x_orig[:bs].to(self.device),
             logger=self.logger)
         checks.check_dynamic(self.model, x_orig[:bs].to(self.device), self.is_tf_model,
@@ -126,7 +137,7 @@ class AutoAttack():
                 robust_flags = torch.zeros(x_orig.shape[0], device=x_orig.device)
                 y_adv = torch.empty_like(y_orig)
                 for batch_idx in range(n_batches):
-                    for _ in range(self.apgd.eot_iter):
+                    for _ in range(self.eval_iter):
                         start_idx = batch_idx * bs
                         end_idx = min( (batch_idx + 1) * bs, x_orig.shape[0])
 
@@ -137,7 +148,7 @@ class AutoAttack():
                         correct_batch = y.eq(output)
                         robust_flags[start_idx:end_idx] += correct_batch.detach().to(robust_flags.device)
                         
-                robust_flags /= self.apgd.eot_iter
+                robust_flags /= self.eval_iter
                 state.robust_flags = robust_flags
                 robust_accuracy = torch.sum(robust_flags).item() / x_orig.shape[0]
                 robust_accuracy_dict = {'clean': robust_accuracy}
@@ -232,11 +243,11 @@ class AutoAttack():
                     # y_adv[non_robust_lin_idcs] = output[false_batch].detach().to(x_adv.device)
                     
                     correct_batch = torch.zeros_like(y)
-                    for _ in range(self.apgd.eot_iter):
+                    for _ in range(self.eval_iter):
                         output = self.get_logits(adv_curr).max(dim=1)[1]
                         correct_batch += y.eq(output).to(robust_flags.device)
                     
-                    correct_batch = correct_batch / self.apgd.eot_iter
+                    correct_batch = correct_batch / self.eval_iter
                     
                     smaller_indices = correct_batch < robust_flags[batch_datapoint_idcs]
                     robust_flags[batch_datapoint_idcs[smaller_indices]] = correct_batch[smaller_indices]
@@ -336,7 +347,6 @@ class AutoAttack():
             self.fab.n_target_classes = 9
             #self.apgd_targeted.n_target_classes = 9
             self.square.n_queries = 5000
-            self.apgd.eot_iter = 20
         
         elif version == 'plus':
             self.attacks_to_run = ['apgd-ce', 'apgd-dlr', 'fab', 'square', 'apgd-t', 'fab-t']
@@ -346,7 +356,6 @@ class AutoAttack():
             self.fab.n_target_classes = 9
             self.apgd_targeted.n_target_classes = 9
             self.square.n_queries = 5000
-            self.apgd.eot_iter = 1
             if not self.norm in ['Linf', 'L2']:
                 print('"{}" version is used with {} norm: please check'.format(
                     version, self.norm))
