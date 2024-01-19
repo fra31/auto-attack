@@ -126,7 +126,7 @@ class AutoAttack():
                 robust_flags = torch.zeros(x_orig.shape[0], device=x_orig.device)
                 y_adv = torch.empty_like(y_orig)
                 for batch_idx in range(n_batches):
-                    for eot_iter in range(self.apgd.eot_iter):
+                    for _ in range(self.apgd.eot_iter):
                         start_idx = batch_idx * bs
                         end_idx = min( (batch_idx + 1) * bs, x_orig.shape[0])
 
@@ -232,7 +232,7 @@ class AutoAttack():
                     # y_adv[non_robust_lin_idcs] = output[false_batch].detach().to(x_adv.device)
                     
                     correct_batch = torch.zeros_like(y)
-                    for eot_iter in range(self.apgd.eot_iter):
+                    for _ in range(self.apgd.eot_iter):
                         output = self.get_logits(adv_curr).max(dim=1)[1]
                         correct_batch += y.eq(output).to(robust_flags.device)
                     
