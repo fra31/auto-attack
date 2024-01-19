@@ -336,6 +336,7 @@ class AutoAttack():
             self.fab.n_target_classes = 9
             #self.apgd_targeted.n_target_classes = 9
             self.square.n_queries = 5000
+            self.apgd.eot_iter = 20
         
         elif version == 'plus':
             self.attacks_to_run = ['apgd-ce', 'apgd-dlr', 'fab', 'square', 'apgd-t', 'fab-t']
@@ -345,6 +346,7 @@ class AutoAttack():
             self.fab.n_target_classes = 9
             self.apgd_targeted.n_target_classes = 9
             self.square.n_queries = 5000
+            self.apgd.eot_iter = 1
             if not self.norm in ['Linf', 'L2']:
                 print('"{}" version is used with {} norm: please check'.format(
                     version, self.norm))
