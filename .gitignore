@@ -1,7 +1,11 @@
 data/
-/__pycache__/
-*/__pycache__/
 
+# python
 build/
 dist/
 *.egg-info/
+*.egg
+*.py[cod]
+__pycache__/
+*.so
+*~
