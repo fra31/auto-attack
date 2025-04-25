@@ -15,7 +15,7 @@ funcs = {'grad': 0,
 checks_doc_path = 'flags_doc.md'
 
 
-def check_randomized(model, x, y, bs=250, n=5, alpha=1e-4, logger=None):
+def is_randomized(model, x, y, bs=250, n=5, alpha=1e-4, logger=None):
     acc = []
     corrcl = []
     outputs = []
@@ -39,6 +39,8 @@ def check_randomized(model, x, y, bs=250, n=5, alpha=1e-4, logger=None):
             warnings.warn(Warning(msg))
         else:
             logger.log(f'Warning: {msg}')
+        return True
+    return False
 
 
 def check_range_output(model, x, alpha=1e-5, logger=None):
